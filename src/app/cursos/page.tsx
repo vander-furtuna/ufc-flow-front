@@ -4,6 +4,7 @@ import { CourseLink } from '@/components/couse-link'
 import { Header } from '@/components/header'
 import { Line } from '@/components/title'
 import { COURSES_DATA } from '@/data/courses'
+import { useCourses } from '@/features/course/queries/use-courses'
 import { CalendarDays, Search, Star, X } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -15,6 +16,10 @@ export default function Home() {
     const query = searchQuery.toLowerCase()
     return course.name.toLowerCase().includes(query) && course.isActive
   })
+
+  const { data, isLoading } = useCourses()
+
+  console.log(data, isLoading)
 
   return (
     <main className="flex min-h-dvh w-full justify-center-safe px-6 pt-12 pb-24">
@@ -34,8 +39,8 @@ export default function Home() {
             <span>Grade Vigente</span>
           </div>
           <div className="grid w-full grid-flow-row grid-cols-1 gap-4 lg:grid-cols-2">
-            {filteredCourses.map((course) => (
-              <CourseLink icon={course.icon} key={course.id} course={course} />
+            {data?.map((course) => (
+              <CourseLink key={course.id} course={course} />
             ))}
           </div>
         </article>

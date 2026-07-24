@@ -1,21 +1,20 @@
 'use client'
 
 import { saveSlugToCookie } from '@/services/slug/save-slug'
-import type { Course } from '@/types/course'
 import { ChevronRight, Hourglass, MapPin, Star } from 'lucide-react'
 import { useCallback, useState, type ComponentProps } from 'react'
 import { useRouter } from 'next/navigation'
-import { DynamicIcon, type IconName } from 'lucide-react/dynamic'
+import { DynamicIcon } from 'lucide-react/dynamic'
 import { AnimatePresence, motion } from 'motion/react'
 import { Glow } from './glow'
 import { cn } from '@/lib/utils'
+import type { SimplifiedCourse } from '@/features/course/types'
 
 type CourseLinkProps = {
-  course: Course
-  icon: IconName
+  course: SimplifiedCourse
 } & ComponentProps<'button'>
 
-export function CourseLink({ course, icon, ...props }: CourseLinkProps) {
+export function CourseLink({ course, ...props }: CourseLinkProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const { push } = useRouter()
@@ -64,7 +63,7 @@ export function CourseLink({ course, icon, ...props }: CourseLinkProps) {
 
         <div className="z-20 flex items-center gap-4">
           <DynamicIcon
-            name={icon}
+            name={course.icon}
             className={cn(
               'text-muted-foreground group-hover/link:text-foreground/90 size-8 transition-all',
               isOpen && 'text-foreground/90',
