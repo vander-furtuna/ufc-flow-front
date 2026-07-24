@@ -3,14 +3,23 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { associateSubjectAction } from '../services/actions'
 import { AssociateSubjectDto } from '../types'
-import { SCHEDULE_QUERY_KEY, SCHEDULES_QUERY_KEY } from '../constants/query-keys'
+import {
+  SCHEDULE_QUERY_KEY,
+  SCHEDULES_QUERY_KEY,
+} from '../constants/query-keys'
 import { toast } from 'sonner'
 
 export function useAssociateSubject() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: AssociateSubjectDto }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string
+      data: AssociateSubjectDto
+    }) => {
       const res = await associateSubjectAction(id, data)
       if (res.error) throw new Error(res.error)
       return res.data

@@ -1,0 +1,10 @@
+export type Nature =
+  | 'OBRIGATÓRIA'
+  | 'OPTATIVA'
+  | 'ATIVIDADE_COMPLEMENTAR'
+  | 'EXTENSÃO'
+  | 'ESTÁGIO'
+  | 'TCC'
+  | 'MÓDULO'
+  | 'TÓPICO_ESPECIAL'
+  | 'OUTRO'

@@ -52,9 +52,6 @@ export async function GET(): Promise<Response> {
     return Response.json(courses)
   } catch (error) {
     const err = error as Error
-    return Response.json(
-      { error: err.message },
-      { status: 500 },
-    )
+    return Response.json({ error: err.message }, { status: 500 })
   }
 }

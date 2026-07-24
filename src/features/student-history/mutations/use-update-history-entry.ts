@@ -10,7 +10,13 @@ export function useUpdateHistoryEntry() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateHistoryEntryDto }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string
+      data: UpdateHistoryEntryDto
+    }) => {
       const res = await updateHistoryEntryAction(id, data)
       if (res.error) throw new Error(res.error)
       return res.data

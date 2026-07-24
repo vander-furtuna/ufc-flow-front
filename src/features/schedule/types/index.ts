@@ -1,26 +1,4 @@
-export interface Schedule {
-  id: string
-  name: string
-  year: number
-  period: number
-  userCourseId: string
-  courseId: string
-}
-
-export interface CreateScheduleDto {
-  name: string
-  year: number
-  period: number
-  userCourseId: string
-  courseId: string
-}
-
-export interface UpdateScheduleDto {
-  name?: string
-  year?: number
-  period?: number
-}
-
-export interface AssociateSubjectDto {
-  subjectId: string
-}
+export * from './schedule'
+export * from './create-schedule-dto'
+export * from './update-schedule-dto'
+export * from './associate-subject-dto'

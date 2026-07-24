@@ -1,22 +1,5 @@
-import { api } from '@/lib/ky-api'
-import { SignInSchema, SignUpSchema } from '../schemas/auth.schema'
-import { SignInResponse, User } from '../types'
-
-export async function signInRequest(
-  data: SignInSchema,
-): Promise<SignInResponse> {
-  return api.post('auth/sign-in', { json: data }).json<SignInResponse>()
-}
-
-export async function signUpRequest(data: SignUpSchema): Promise<User> {
-  return api.post('auth/sign-up', { json: data }).json<User>()
-}
-
-export async function signOutRequest(): Promise<void> {
-  await api.post('auth/sign-out')
-}
-
-export async function getProfileRequest(): Promise<User> {
-  return api.get('auth/profile').json<User>()
-}
-
+export * from './requests/sign-in-request'
+export * from './requests/sign-up-request'
+export * from './requests/sign-out-request'
+export * from './requests/get-profile-request'
+export * from './actions'
