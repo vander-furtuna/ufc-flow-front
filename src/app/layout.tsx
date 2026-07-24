@@ -42,10 +42,15 @@ const poppins = localFont({
 })
 
 const clashDisplay = localFont({
-  src: '../assets/fonts/clash-display/ClashDisplay-Variable.woff2',
+  src: [
+    {
+      path: '../assets/fonts/clash-display/ClashDisplay-Variable.woff2',
+      weight: '200 700',
+      style: 'normal',
+    },
+  ],
   variable: '--font-clash-display',
   display: 'swap',
-  preload: false,
 })
 
 const dmMono = DM_Mono({
