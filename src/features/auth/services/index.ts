@@ -15,3 +15,8 @@ export async function signUpRequest(data: SignUpSchema): Promise<User> {
 export async function signOutRequest(): Promise<void> {
   await api.post('auth/sign-out')
 }
+
+export async function getProfileRequest(): Promise<User> {
+  return api.get('auth/profile').json<User>()
+}
+

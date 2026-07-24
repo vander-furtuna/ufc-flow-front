@@ -1,7 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { signInRequest, signUpRequest, signOutRequest } from './index'
+import { signInRequest, signUpRequest, signOutRequest, getProfileRequest } from './index'
 import { SignInSchema, SignUpSchema } from '../schemas/auth.schema'
 import { User } from '../types'
 
@@ -108,3 +108,12 @@ export async function getCurrentUserAction(): Promise<User | null> {
     return null
   }
 }
+
+export async function getProfileAction(): Promise<User | null> {
+  try {
+    return await getProfileRequest()
+  } catch {
+    return null
+  }
+}
+
