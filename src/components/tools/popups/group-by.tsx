@@ -42,7 +42,7 @@ export function GroupByPopup() {
         <strong className="text-foreground text-center">Agrupar por</strong>
 
         <RadioGroup
-          defaultValue={groupBy}
+          value={groupBy}
           onValueChange={handleSelectGroupBy}
           className="gap-3"
         >

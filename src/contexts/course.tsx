@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react'
 
-import { COURSES_DATA } from '@/data/courses'
+import { getCourseByIdentifierAction } from '@/features/course/services/actions'
 import type { Course, CurriculumStructure, Subject } from '@/types/course'
 import { normalizeWords } from '@/utils/normalize-words'
 
@@ -24,20 +24,60 @@ type CourseContextType = {
   filteredSubjects: Subject[]
   selectedSubject: Subject | null
   isCourseLoading: boolean
-  selectCourseBySlug: (slug: string) => void
-  selectCurriculumBySlug: (slug: string) => void
+  selectCourseBySlug: (
+    courseSlug: string,
+    curriculumSlug?: string,
+  ) => Promise<void>
+  selectCurriculumBySlug: (curriculumSlug: string) => void
   setSelectedSubject: (subject: Subject | null) => void
-  handleSelect: (props: HandleSelectProps) => void
+  handleSelect: (props: HandleSelectProps) => Promise<void>
   handleSelectCurriculum: (props: {
     curriculumSlug: string
     courseSlug: string
-  }) => void
+  }) => Promise<void>
 }
 
 type HandleSelectProps = {
   courseSlug: string
   curriculumSlug: string
   subjectCode: string
+}
+
+function normalizeCurriculum(
+  curriculum: CurriculumStructure,
+): CurriculumStructure {
+  const branches = curriculum.branches || curriculum.branchs || []
+  const subjects = (curriculum.subjects || []).map((s) => {
+    const code = s.code || s.subject?.code || ''
+    const name = s.name || s.subject?.name || ''
+    const slug = s.slug || s.subject?.slug || ''
+    const branchIds = s.branchIds || s.branch || []
+    const prerequisiteCodes = s.prerequisiteCodes || s.prerequisites || []
+    const equivalenceCodes = s.equivalenceCodes || s.equivalences || []
+    const corequisiteCodes = s.corequisiteCodes || s.corequisites || []
+
+    return {
+      ...s,
+      code,
+      name,
+      slug,
+      branchIds,
+      prerequisiteCodes,
+      equivalenceCodes,
+      corequisiteCodes,
+      branch: branchIds,
+      prerequisites: prerequisiteCodes,
+      equivalences: equivalenceCodes,
+      corequisites: corequisiteCodes,
+    }
+  })
+
+  return {
+    ...curriculum,
+    branches,
+    branchs: branches,
+    subjects,
+  }
 }
 
 const courseContext = createContext<CourseContextType>({} as CourseContextType)
@@ -55,7 +95,7 @@ export function CourseProvider({
     durationFilter,
   } = useFilter()
 
-  const courses = COURSES_DATA
+  const [courses] = useState<Course[]>([])
   const [isCourseLoading, setIsCourseLoading] = useState(true)
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [selectedCurriculum, setSelectedCurriculum] =
@@ -65,34 +105,81 @@ export function CourseProvider({
 
   const router = useRouter()
 
-  const selectCourseBySlug = useCallback(
-    (slug: string) => {
-      const course = courses.find((course) => course.slug === slug)
+  const fetchCourse = useCallback(
+    async (courseSlug: string, curriculumSlug?: string) => {
+      setIsCourseLoading(true)
+      try {
+        const res = await getCourseByIdentifierAction(courseSlug)
+        if (res.data) {
+          const rawCourse = res.data as unknown as Course
+          const normalizedStructures = (
+            rawCourse.curriculumStructures || []
+          ).map(normalizeCurriculum)
+          const course: Course = {
+            ...rawCourse,
+            curriculumStructures: normalizedStructures,
+          }
+          setSelectedCourse(course)
 
-      if (course) {
-        setSelectedCourse(course)
+          const targetSlug = curriculumSlug
+          const curriculum =
+            (targetSlug
+              ? course.curriculumStructures.find((c) => c.slug === targetSlug)
+              : null) ||
+            course.curriculumStructures.find((c) => c.isCurrent) ||
+            course.curriculumStructures[0] ||
+            null
+
+          setSelectedCurriculum(curriculum)
+          setSelectedSubjects(curriculum ? curriculum.subjects : [])
+        } else {
+          setSelectedCourse(null)
+          setSelectedCurriculum(null)
+          setSelectedSubjects([])
+        }
+      } catch (error) {
+        console.error('Error fetching course:', error)
+        setSelectedCourse(null)
         setSelectedCurriculum(null)
         setSelectedSubjects([])
-        setSelectedSubject(null)
-        setIsCourseLoading(true)
+      } finally {
+        setIsCourseLoading(false)
       }
     },
-    [courses],
+    [],
+  )
+
+  const selectCourseBySlug = useCallback(
+    async (courseSlug: string, curriculumSlug?: string) => {
+      if (selectedCourse?.slug === courseSlug) {
+        if (curriculumSlug && selectedCurriculum?.slug !== curriculumSlug) {
+          const curriculum = selectedCourse.curriculumStructures.find(
+            (c) => c.slug === curriculumSlug,
+          )
+          if (curriculum) {
+            setSelectedCurriculum(curriculum)
+            setSelectedSubjects(curriculum.subjects)
+          }
+        }
+        setIsCourseLoading(false)
+        return
+      }
+
+      await fetchCourse(courseSlug, curriculumSlug)
+    },
+    [selectedCourse, selectedCurriculum, fetchCourse],
   )
 
   const selectCurriculumBySlug = useCallback(
     (slug: string) => {
       if (selectedCourse) {
-        setIsCourseLoading(true)
         const curriculum = selectedCourse.curriculumStructures.find(
-          (curriculum) => curriculum.slug === slug,
+          (c) => c.slug === slug,
         )
-
         if (curriculum) {
           setSelectedCurriculum(curriculum)
           setSelectedSubjects(curriculum.subjects)
         }
-
         setIsCourseLoading(false)
       }
     },
@@ -100,44 +187,60 @@ export function CourseProvider({
   )
 
   const handleSelect = useCallback(
-    ({ courseSlug, curriculumSlug, subjectCode }: HandleSelectProps) => {
-      selectCourseBySlug(courseSlug)
-      selectCurriculumBySlug(curriculumSlug)
-      if (selectedCurriculum) {
-        const subject = selectedCurriculum.subjects.find(
-          (subject) => subject.code === subjectCode,
-        )
-        if (subject) {
-          setSelectedSubject(subject)
-        } else {
-          router.push(`/`)
+    async ({ courseSlug, curriculumSlug, subjectCode }: HandleSelectProps) => {
+      let currentCourse = selectedCourse
+      let currentCurriculum = selectedCurriculum
+
+      if (currentCourse?.slug !== courseSlug) {
+        setIsCourseLoading(true)
+        const res = await getCourseByIdentifierAction(courseSlug)
+        if (res.data) {
+          const rawCourse = res.data as unknown as Course
+          currentCourse = {
+            ...rawCourse,
+            curriculumStructures: (rawCourse.curriculumStructures || []).map(
+              normalizeCurriculum,
+            ),
+          }
+          setSelectedCourse(currentCourse)
         }
       }
+
+      if (currentCourse) {
+        currentCurriculum =
+          currentCourse.curriculumStructures.find(
+            (c) => c.slug === curriculumSlug,
+          ) || null
+        setSelectedCurriculum(currentCurriculum)
+        setSelectedSubjects(currentCurriculum ? currentCurriculum.subjects : [])
+
+        if (currentCurriculum) {
+          const subject = currentCurriculum.subjects.find(
+            (s) => (s.code || s.subject?.code) === subjectCode,
+          )
+          if (subject) {
+            setSelectedSubject(subject)
+          } else {
+            router.push('/')
+          }
+        }
+      }
+      setIsCourseLoading(false)
     },
-    [selectCourseBySlug, selectCurriculumBySlug, selectedCurriculum, router],
+    [selectedCourse, selectedCurriculum, router],
   )
 
   const handleSelectCurriculum = useCallback(
-    ({
+    async ({
       curriculumSlug,
       courseSlug,
     }: {
       curriculumSlug: string
       courseSlug: string
     }) => {
-      const course = courses.find((course) => course.slug === courseSlug)
-
-      const curriculum = course?.curriculumStructures.find(
-        (curriculum) => curriculum.slug === curriculumSlug,
-      )
-
-      setSelectedCourse(course ?? null)
-      setSelectedCurriculum(curriculum ?? null)
-      setSelectedSubjects(curriculum ? curriculum.subjects : [])
-      setSelectedSubject(null)
-      setIsCourseLoading(false)
+      await fetchCourse(courseSlug, curriculumSlug)
     },
-    [courses],
+    [fetchCourse],
   )
 
   const filteredSubjects = useMemo(() => {
@@ -152,9 +255,13 @@ export function CourseProvider({
     const hasNatureFilter = natureFilter.length > 0
 
     const matchesFilters = (subject: Subject) => {
+      const name = subject.name || subject.subject?.name || ''
+      const code = subject.code || subject.subject?.code || ''
+      const branchIds = subject.branchIds || subject.branch || []
+
       if (hasQuery) {
-        const normalizedName = normalizeWords(subject.name)
-        const codeLower = subject.code.toLowerCase()
+        const normalizedName = normalizeWords(name)
+        const codeLower = code.toLowerCase()
 
         if (
           !normalizedName.includes(normalizedQueryFilter) &&
@@ -170,7 +277,7 @@ export function CourseProvider({
 
       if (
         hasBranchFilter &&
-        !branchFilter.some((branch) => subject.branch.includes(branch))
+        !branchFilter.some((branchId) => branchIds.includes(branchId))
       ) {
         return false
       }

@@ -96,7 +96,11 @@ export function BranchPopup() {
             </fieldset>
           ))}
           <div className="h-px w-full bg-slate-200 dark:bg-slate-700" />
-          {selectedCurriculum?.branchs.map((branch) => (
+          {(
+            selectedCurriculum?.branches ||
+            selectedCurriculum?.branchs ||
+            []
+          ).map((branch) => (
             <fieldset
               key={branch.id}
               className="flex items-center justify-start gap-2 rounded-md"

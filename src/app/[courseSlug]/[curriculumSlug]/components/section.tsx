@@ -35,16 +35,13 @@ export function CurriculumSection({ params }: CurriculumProps) {
   const { isToolsLoaded } = useTools()
 
   const handleGetSelectedCurriculumBySlug = useCallback(() => {
-    // Garante que o curso selecionado sempre corresponde ao slug da URL
-    if (!selectedCourse || selectedCourse.slug !== courseSlug) {
-      selectCourseBySlug(courseSlug)
-      return
-    }
-
-    // Depois que o curso correto estiver selecionado,
-    // garante que o currículo também corresponda ao slug da URL
-    if (!selectedCurriculum || selectedCurriculum.slug !== curriculumSlug) {
-      selectCurriculumBySlug(curriculumSlug)
+    if (
+      !selectedCourse ||
+      selectedCourse.slug !== courseSlug ||
+      !selectedCurriculum ||
+      selectedCurriculum.slug !== curriculumSlug
+    ) {
+      selectCourseBySlug(courseSlug, curriculumSlug)
     }
   }, [
     courseSlug,
@@ -52,7 +49,6 @@ export function CurriculumSection({ params }: CurriculumProps) {
     selectedCourse,
     selectedCurriculum,
     selectCourseBySlug,
-    selectCurriculumBySlug,
   ])
 
   useEffect(() => {

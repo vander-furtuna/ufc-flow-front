@@ -33,7 +33,9 @@ export default function SubjectPage({ params }: SubjectPageProps) {
         <SubjectView
           subject={selectedSubject}
           allSubjects={selectedCurriculum.subjects}
-          branches={selectedCurriculum.branchs}
+          branches={
+            selectedCurriculum.branches || selectedCurriculum.branchs || []
+          }
           onBack={() => router.back()}
         />
       ) : (

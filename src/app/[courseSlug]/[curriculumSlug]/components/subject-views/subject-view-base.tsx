@@ -24,8 +24,9 @@ export function SubjectViewBase({
   const mappedSubjects = useMemo(() => {
     return subjects
       ?.map((subject) => {
+        const subjectCode = subject.code || subject.subject?.code || ''
         const subjectClass = currentClassGroup?.classGroup?.find(
-          (s) => s.code === subject.code,
+          (s) => s.code === subjectCode,
         )
 
         if (availability === 'available' && !subjectClass) {
@@ -61,12 +62,15 @@ export function SubjectViewBase({
               return null
             }
 
+            const code = subject.code || subject.subject?.code || ''
+            const slug = subject.slug || subject.subject?.slug || ''
+
             return (
               <SubjectCard
                 childIndex={index}
                 subject={subject}
-                key={subject.code}
-                id={subject.slug}
+                key={code}
+                id={slug}
                 isActive={subject.isActive}
               />
             )

@@ -20,19 +20,27 @@ export function SubjectCard({
   isActive = true,
 }: SubjectCardProps) {
   const { selectedSubject, setSelectedSubject } = useCourse()
-  const name = useMemo(() => capitalizeWords(subject.name), [subject.name])
+  const subjectName = subject.name || subject.subject?.name || ''
+  const subjectCode = subject.code || subject.subject?.code || ''
+  const name = useMemo(() => capitalizeWords(subjectName), [subjectName])
 
   const handleClickSubject = useCallback(() => {
-    if (selectedSubject?.code === subject.code) {
+    if (
+      selectedSubject &&
+      (selectedSubject.code || selectedSubject.subject?.code) === subjectCode
+    ) {
       setSelectedSubject(null)
     } else {
       setSelectedSubject(subject)
     }
-  }, [selectedSubject, setSelectedSubject, subject])
+  }, [selectedSubject, setSelectedSubject, subject, subjectCode])
 
   const selectedStatus = useMemo(
-    () => (selectedSubject?.code === subject.code ? 'selected' : 'unselected'),
-    [selectedSubject, subject.code],
+    () =>
+      (selectedSubject?.code || selectedSubject?.subject?.code) === subjectCode
+        ? 'selected'
+        : 'unselected',
+    [selectedSubject, subjectCode],
   )
 
   const opacity = useMemo(
@@ -47,7 +55,7 @@ export function SubjectCard({
       animate={{ scale: 1, opacity }}
       exit={{ scale: 0, opacity: 0 }}
       transition={{ duration: 0.15, delay: 0.03 * childIndex }}
-      key={subject.code}
+      key={subjectCode}
       className="group ring-border center before:bg-card relative flex h-24 w-full max-w-50 shrink-0 cursor-pointer flex-col gap-1 rounded-lg bg-transparent px-4 text-center ring-1 transition-all duration-300 before:absolute before:-z-20 before:size-full before:rounded-lg before:content-[''] after:absolute after:right-0 after:-z-10 after:size-full after:rounded-lg after:bg-black after:opacity-0 after:transition-all after:duration-300 after:content-[''] hover:shadow-lg hover:ring-0 active:scale-95 data-[selected=selected]:shadow-lg data-[selected=selected]:ring-0 data-[state=inactive]:opacity-60 dark:ring-slate-700 dark:hover:after:opacity-15 dark:data-[selected=selected]:after:opacity-15"
       onClick={handleClickSubject}
       data-selected={selectedStatus}
@@ -57,7 +65,10 @@ export function SubjectCard({
         {name}
       </span>
 
-      <SubjectBar nature={subject.nature} branch={subject.branch} />
+      <SubjectBar
+        nature={subject.nature}
+        branchIds={subject.branchIds || subject.branch}
+      />
     </motion.button>
   )
 }

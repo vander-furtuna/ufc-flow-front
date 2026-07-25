@@ -27,13 +27,15 @@ export function BranchView() {
         />
       ))}
 
-      {selectedCurriculum?.branchs.map((branch) => {
+      {selectedCurriculum?.branches?.map((branch) => {
         return (
           <SubjectViewBase
             key={branch.id}
             title={branch.name}
             subjects={selectedCurriculum?.subjects
-              .filter((subject) => subject.branch.includes(branch.id))
+              .filter((subject) =>
+                (subject.branchIds || subject.branch || []).includes(branch.id),
+              )
               .sort((a, b) => a.semester - b.semester)}
           />
         )

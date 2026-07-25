@@ -46,34 +46,51 @@ export function Sidebar() {
   const { selectedSubject, selectedCurriculum, setSelectedSubject } =
     useCourse()
 
+  const selectedSubjectBranchIds = selectedSubject
+    ? selectedSubject.branchIds || selectedSubject.branch || []
+    : []
+  const selectedSubjectPrereqs = selectedSubject
+    ? selectedSubject.prerequisiteCodes || selectedSubject.prerequisites || []
+    : []
+  const selectedSubjectCode = selectedSubject
+    ? selectedSubject.code || selectedSubject.subject?.code || ''
+    : ''
+
+  const branchesList =
+    selectedCurriculum?.branches || selectedCurriculum?.branchs || []
+
   const colors =
-    selectedCurriculum?.branchs
+    branchesList
       .filter((currentBranch) =>
-        selectedSubject?.branch.includes(currentBranch.id),
-      ) // Filtra apenas as branchs com ids presentes em branchsIds
+        selectedSubjectBranchIds.includes(currentBranch.id),
+      )
       .map((branch) => branch.color) ?? []
 
   const glowColor = getGlowColor(selectedSubject?.nature, colors)
 
   const getBranchs =
     selectedCurriculum && selectedSubject
-      ? selectedCurriculum.branchs.filter((branch) =>
-          selectedSubject.branch.includes(branch.id),
+      ? branchesList.filter((branch) =>
+          selectedSubjectBranchIds.includes(branch.id),
         )
       : []
 
   const preRequisites =
     selectedCurriculum && selectedSubject
       ? selectedCurriculum.subjects.filter((subject) =>
-          selectedSubject.prerequisites.includes(subject.code),
+          selectedSubjectPrereqs.includes(
+            subject.code || subject.subject?.code || '',
+          ),
         )
       : []
 
   const unlockables =
     selectedCurriculum && selectedSubject
-      ? selectedCurriculum.subjects.filter((subject) =>
-          subject.prerequisites.includes(selectedSubject.code),
-        )
+      ? selectedCurriculum.subjects.filter((subject) => {
+          const prereqs =
+            subject.prerequisiteCodes || subject.prerequisites || []
+          return prereqs.includes(selectedSubjectCode)
+        })
       : []
 
   const handleUnselectSubject = useCallback(() => {

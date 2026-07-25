@@ -42,12 +42,14 @@ export function Sidebar() {
 
   const colors = useMemo(
     () =>
-      selectedCurriculum?.branchs
-        .filter((currentBranch) =>
-          selectedSubject?.branch.includes(currentBranch.id),
-        ) // Filtra apenas as branchs com ids presentes em branchsIds
+      (selectedCurriculum?.branches || selectedCurriculum?.branchs)
+        ?.filter((currentBranch) =>
+          (selectedSubject?.branchIds || selectedSubject?.branch)?.includes(
+            currentBranch.id,
+          ),
+        )
         .map((branch) => branch.color),
-    [selectedCurriculum?.branchs, selectedSubject?.branch],
+    [selectedCurriculum, selectedSubject],
   )
 
   const glowColor = useMemo(() => {
@@ -65,27 +67,34 @@ export function Sidebar() {
 
   const getBranchs = useMemo(() => {
     if (selectedCurriculum) {
-      return selectedCurriculum.branchs.filter((branch) =>
-        selectedSubject?.branch.includes(branch.id),
-      )
+      const branchesList =
+        selectedCurriculum.branches || selectedCurriculum.branchs || []
+      const subjBranches =
+        selectedSubject?.branchIds || selectedSubject?.branch || []
+      return branchesList.filter((branch) => subjBranches.includes(branch.id))
     }
     return []
-  }, [selectedCurriculum, selectedSubject?.branch])
+  }, [selectedCurriculum, selectedSubject])
 
   const preRequisites = useMemo(() => {
-    if (selectedCurriculum) {
-      return selectedCurriculum.subjects.filter((subject) =>
-        selectedSubject?.prerequisites.includes(subject.code),
-      )
+    if (selectedCurriculum && selectedSubject) {
+      const prereqs =
+        selectedSubject.prerequisiteCodes || selectedSubject.prerequisites || []
+      return selectedCurriculum.subjects.filter((subject) => {
+        const code = subject.code || subject.subject?.code || ''
+        return prereqs.includes(code)
+      })
     }
     return []
-  }, [selectedCurriculum, selectedSubject?.prerequisites])
+  }, [selectedCurriculum, selectedSubject])
 
   const unlockables = useMemo(() => {
     if (selectedCurriculum && selectedSubject) {
-      return selectedCurriculum.subjects.filter((subject) =>
-        subject.prerequisites.includes(selectedSubject.code),
-      )
+      const code = selectedSubject.code || selectedSubject.subject?.code || ''
+      return selectedCurriculum.subjects.filter((subject) => {
+        const prereqs = subject.prerequisiteCodes || subject.prerequisites || []
+        return prereqs.includes(code)
+      })
     }
     return []
   }, [selectedCurriculum, selectedSubject])

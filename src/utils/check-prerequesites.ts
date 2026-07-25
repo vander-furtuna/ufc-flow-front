@@ -6,27 +6,35 @@ export const checkPrerequisites = (
   allSubjects: Subject[] = [],
 ): string[] => {
   const missing: string[] = []
-  if (!subject.prerequisites) return missing
+  const prereqs = subject.prerequisiteCodes || subject.prerequisites || []
+  if (!prereqs.length) return missing
 
-  for (const preReqCode of subject.prerequisites) {
+  for (const preReqCode of prereqs) {
     if (completedSubjectCodes.includes(preReqCode)) {
       continue
     }
 
     // Check if there is a completed subject that lists preReqCode in its equivalences
-    const hasEquivalentCompleted = allSubjects.some(
-      (s) =>
-        completedSubjectCodes.includes(s.code) &&
-        s.equivalences?.includes(preReqCode),
-    )
+    const hasEquivalentCompleted = allSubjects.some((s) => {
+      const sCode = s.code || s.subject?.code || ''
+      const equivs = s.equivalenceCodes || s.equivalences || []
+      return (
+        completedSubjectCodes.includes(sCode) && equivs.includes(preReqCode)
+      )
+    })
 
     if (hasEquivalentCompleted) {
       continue
     }
 
     // Check if the prerequisite subject itself lists a completed subject in its equivalences
-    const prereqSubject = allSubjects.find((s) => s.code === preReqCode)
-    const hasCompletedEquivalent = prereqSubject?.equivalences?.some((eqCode) =>
+    const prereqSubject = allSubjects.find(
+      (s) => (s.code || s.subject?.code) === preReqCode,
+    )
+    const prereqEquivs = prereqSubject
+      ? prereqSubject.equivalenceCodes || prereqSubject.equivalences || []
+      : []
+    const hasCompletedEquivalent = prereqEquivs.some((eqCode) =>
       completedSubjectCodes.includes(eqCode),
     )
 

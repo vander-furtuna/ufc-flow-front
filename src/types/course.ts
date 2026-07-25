@@ -39,15 +39,37 @@ export type Subject = {
   id: string
   code: string
   name: string
+  slug: string
   semester: number
   duration: number
   nature: Nature
   type: SubjectType
-  branch: string[]
-  prerequisites: string[]
-  equivalences: string[]
-  corequisites: string[]
-  slug: string
+  aula?: number
+  lab?: number
+  ead?: number
+  ext?: number
+  cr?: number
+  subjectId?: string
+  structureId?: string
+  subject?: {
+    id: string
+    code: string
+    name: string
+    slug: string
+  }
+  branchIds?: string[]
+  prerequisiteCodes?: string[]
+  equivalenceCodes?: string[]
+  corequisiteCodes?: string[]
+  branchRelations?: {
+    branchId: string
+    nature: Nature
+  }[]
+  // Legacy aliases
+  branch?: string[]
+  prerequisites?: string[]
+  equivalences?: string[]
+  corequisites?: string[]
   details?: {
     aula: number
     lab: number
@@ -55,10 +77,6 @@ export type Subject = {
     ext: number
     cr: number
   }
-  branchRelations?: {
-    branchId: string
-    nature: Nature
-  }[]
 }
 
 export type CurriculumStructure = {
@@ -82,7 +100,9 @@ export type CurriculumStructure = {
     avg: number
     max: number
   }
-  branchs: Branch[]
+  branches?: Branch[]
+  /** @deprecated use branches */
+  branchs?: Branch[]
   subjects: Subject[]
 }
 

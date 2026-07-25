@@ -5,18 +5,24 @@ import { getSubjectStyle } from '@/utils/get-subject-style'
 
 type SubjectBarProps = {
   nature: string
-  branch: string[]
+  branch?: string[]
+  branchIds?: string[]
 }
 
-export function SubjectBar({ nature, branch }: SubjectBarProps) {
+export function SubjectBar({ nature, branch, branchIds }: SubjectBarProps) {
   const { selectedCurriculum } = useCourse()
+
+  const targetBranchIds = useMemo(
+    () => branchIds || branch || [],
+    [branchIds, branch],
+  )
 
   const colors = useMemo(
     () =>
-      selectedCurriculum?.branchs
-        .filter((currentBranch) => branch.includes(currentBranch.id)) // Filtra apenas as branchs com ids presentes em branchsIds
-        .map((branch) => branch.color),
-    [selectedCurriculum, branch],
+      selectedCurriculum?.branches
+        ?.filter((currentBranch) => targetBranchIds.includes(currentBranch.id))
+        .map((b) => b.color) ?? [],
+    [selectedCurriculum, targetBranchIds],
   )
 
   const backgroundStyle = getSubjectStyle(colors, nature)

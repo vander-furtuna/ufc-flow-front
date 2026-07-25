@@ -23,9 +23,15 @@ export function SubjectDetailsPainel({
 }: SubjectDetailsPainelProps) {
   const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(true)
 
+  const subjectBranchIds = subject
+    ? subject.branchIds || subject.branch || []
+    : []
+  const subjectName = subject?.name || subject?.subject?.name || ''
+  const subjectCode = subject?.code || subject?.subject?.code || ''
+
   const colors =
     branches
-      .filter((currentBranch) => subject?.branch.includes(currentBranch.id)) // Filtra apenas as branchs com ids presentes em branchsIds
+      .filter((currentBranch) => subjectBranchIds.includes(currentBranch.id))
       .map((branch) => branch.color) ?? []
 
   const glowColor = getGlowColor(subject?.nature, colors)
@@ -65,15 +71,15 @@ export function SubjectDetailsPainel({
           isInfoPanelOpen ? '' : 'mt-0 text-base',
         )}
       >
-        {subject.name}
+        {subjectName}
       </h2>
 
-      {subject?.code && isInfoPanelOpen && (
+      {subjectCode && isInfoPanelOpen && (
         <button
           className="center mt-2 flex w-fit gap-2 rounded-full bg-slate-50/40 px-2 py-1 font-semibold text-slate-800 transition-all duration-300 dark:bg-slate-900/10 dark:text-slate-100 dark:hover:bg-slate-900/20"
-          onClick={() => copyToClipboard(subject.code)}
+          onClick={() => copyToClipboard(subjectCode)}
         >
-          <span className="font-heading text-sm">{subject.code}</span>
+          <span className="font-heading text-sm">{subjectCode}</span>
           <figure className="size-4">
             <Copy strokeWidth={2.5} className="size-3" />
           </figure>

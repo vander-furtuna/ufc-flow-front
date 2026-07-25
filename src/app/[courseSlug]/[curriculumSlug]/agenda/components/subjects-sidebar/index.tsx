@@ -241,9 +241,15 @@ export function SubjectsSidebar({
                 </div>
                 <div className="flex w-full flex-col gap-1.5">
                   {subjects.map((subject, index) => {
-                    const colors = selectedCurriculum?.branchs
+                    const branchesList =
+                      selectedCurriculum?.branches ||
+                      selectedCurriculum?.branchs ||
+                      []
+                    const subjBranchIds =
+                      subject.branchIds || subject.branch || []
+                    const colors = branchesList
                       .filter((currentBranch) =>
-                        subject.branch.includes(currentBranch.id),
+                        subjBranchIds.includes(currentBranch.id),
                       )
                       .map((branch) => branch.color)
 
@@ -398,9 +404,15 @@ export function SubjectsSidebar({
               </h3>
               <div className="flex w-full flex-col gap-1.5">
                 {subjects.map((subject, index) => {
-                  const colors = selectedCurriculum?.branchs
+                  const branchesList =
+                    selectedCurriculum?.branches ||
+                    selectedCurriculum?.branchs ||
+                    []
+                  const subjBranchIds =
+                    subject.branchIds || subject.branch || []
+                  const colors = branchesList
                     .filter((currentBranch) =>
-                      subject.branch.includes(currentBranch.id),
+                      subjBranchIds.includes(currentBranch.id),
                     )
                     .map((branch) => branch.color)
 

@@ -49,7 +49,7 @@ export function AvailabilityPopup() {
         <strong className="text-foreground text-center">Disponibilidade</strong>
 
         <RadioGroup
-          defaultValue={availability}
+          value={availability}
           onValueChange={handleSelectAvailability}
           className="gap-3"
         >

@@ -47,9 +47,10 @@ const findAncestors = (
   if (!existing || depth < existing.depth) {
     map.set(subject.id, { subject, depth })
   }
-  subject.prerequisites.forEach((prereqCode) => {
+  const prereqs = subject.prerequisiteCodes || subject.prerequisites || []
+  prereqs.forEach((prereqCode) => {
     const prereq = allSubjects.find(
-      (s) => s.code === prereqCode || s.id === prereqCode,
+      (s) => (s.code || s.subject?.code) === prereqCode || s.id === prereqCode,
     )
     if (prereq) findAncestors(prereq, allSubjects, visited, depth - 1, map)
   })
@@ -68,11 +69,11 @@ const findDescendants = (
   if (!existing || depth > existing.depth) {
     map.set(subject.id, { subject, depth })
   }
-  const unlocked = allSubjects.filter(
-    (s) =>
-      s.prerequisites.includes(subject.code) ||
-      s.prerequisites.includes(subject.id),
-  )
+  const subjCode = subject.code || subject.subject?.code || ''
+  const unlocked = allSubjects.filter((s) => {
+    const pCodes = s.prerequisiteCodes || s.prerequisites || []
+    return pCodes.includes(subjCode) || pCodes.includes(subject.id)
+  })
   unlocked.forEach((child) =>
     findDescendants(child, allSubjects, visited, depth + 1, map),
   )
@@ -101,22 +102,30 @@ export const generateDependencyGraph = (
   const Y_SPACING = 150
 
   depthGroups.forEach((groupSubjects, depth) => {
-    groupSubjects.sort((a, b) => a.code.localeCompare(b.code))
+    groupSubjects.sort((a, b) => {
+      const codeA = a.code || a.subject?.code || ''
+      const codeB = b.code || b.subject?.code || ''
+      return codeA.localeCompare(codeB)
+    })
     const groupHeight = groupSubjects.length * Y_SPACING
     const startY = -(groupHeight / 2) + Y_SPACING / 2
 
     groupSubjects.forEach((subj, index) => {
       const isCenter = subj.id === centerSubjectId
+      const code = subj.code || subj.subject?.code || ''
+      const name = subj.name || subj.subject?.name || ''
+      const branchIds = subj.branchIds || subj.branch || []
+
       nodes.push({
         id: subj.id,
         type: 'customSubject',
         position: { x: depth * X_SPACING, y: startY + index * Y_SPACING },
         data: {
-          label: subj.name,
-          code: subj.code,
+          label: name,
+          code: code,
           type: subj.type,
           nature: subj.nature,
-          branchIds: subj.branch,
+          branchIds: branchIds,
           isPrerequisite: depth < 0,
           isUnlocked: depth > 0,
           isSelected: isCenter,
@@ -124,12 +133,13 @@ export const generateDependencyGraph = (
         draggable: false,
       })
 
-      const children = allSubjects.filter(
-        (s) =>
-          (s.prerequisites.includes(subj.code) ||
-            s.prerequisites.includes(subj.id)) &&
-          nodeMap.has(s.id),
-      )
+      const children = allSubjects.filter((s) => {
+        const pCodes = s.prerequisiteCodes || s.prerequisites || []
+        return (
+          (pCodes.includes(code) || pCodes.includes(subj.id)) &&
+          nodeMap.has(s.id)
+        )
+      })
       children.forEach((child) => {
         edges.push({
           id: `${subj.id}-${child.id}`,
