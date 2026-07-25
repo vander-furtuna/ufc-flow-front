@@ -74,6 +74,29 @@ export const checkPrerequisites = (
       completedSubjectCodes.includes(eqCode),
     )
 
+    if (hasCompletedEquivalent) {
+      continue
+    }
+
+    missing.push(preReqCode)
+  }
+
+  const unmetPrereqs = subject.prerequisites.filter(
+    (code) => !isPreReqCompleted(code, completedSubjectCodes, allSubjects),
+  )
+
+  if (unmetPrereqs.length === 0) {
+    return []
+  }
+
+  const groups: string[][] = []
+
+  for (const code of unmetPrereqs) {
+    const codeEquivs = getEquivalentCodes(code, allSubjects)
+    const existingGroup = groups.find((group) =>
+      group.some((gCode) => codeEquivs.has(gCode)),
+    )
+
     if (existingGroup) {
       if (!existingGroup.includes(code)) {
         existingGroup.push(code)
