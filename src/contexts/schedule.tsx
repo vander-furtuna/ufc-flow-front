@@ -24,6 +24,8 @@ import { toast } from 'sonner'
 import { useCourse } from './course'
 import { useClass } from './class'
 
+import { v4 as uuidv4 } from 'uuid'
+
 const DEFAULT_YEAR = process.env.NEXT_PUBLIC_CURRENT_YEAR
   ? parseInt(process.env.NEXT_PUBLIC_CURRENT_YEAR)
   : new Date().getFullYear()
@@ -54,6 +56,7 @@ type ScheduleContextData = {
   scheduleClasses: ScheduledClass[]
   selectSchedule: (schedule: Schedule) => void
   toggleCompletedSubject: (subjectCode: string) => void
+  toggleSubjectsCompleted: (subjectCodes: string[]) => void
   addClassToSchedule: (section: ClassSection) => void
   removeClassFromSchedule: (section: ScheduledClass) => void
   createSchedule: (name?: string) => Promise<void>
@@ -109,10 +112,48 @@ export function ScheduleProvider({ children }: { children: React.ReactNode }) {
     await saveCompletedSubjects(newSubjects)
   }
 
+  const toggleSubjectsCompleted = async (subjectCodes: string[]) => {
+    if (subjectCodes.length === 0) return
+
+    const areAllCompleted = subjectCodes.every((code) =>
+      completedSubjects.includes(code),
+    )
+
+    let newSubjects: string[]
+    if (areAllCompleted) {
+      newSubjects = completedSubjects.filter(
+        (code) => !subjectCodes.includes(code),
+      )
+    } else {
+      const toAdd = subjectCodes.filter(
+        (code) => !completedSubjects.includes(code),
+      )
+      newSubjects = [...completedSubjects, ...toAdd]
+
+      const conflictingClasses = scheduleClasses.filter((p) =>
+        toAdd.includes(p.code),
+      )
+
+      if (conflictingClasses.length > 0) {
+        const conflictingIds = new Set(conflictingClasses.map((c) => c.id))
+        const newClasses = scheduleClasses.filter(
+          (c) => !conflictingIds.has(c.id),
+        )
+        await updateCurrentSchedule(newClasses)
+        toast.info('Disciplinas removidas da agenda', {
+          description: `${conflictingClasses.length} disciplina(s) marcada(s) como concluída(s) foram removida(s) da agenda.`,
+        })
+      }
+    }
+
+    setCompletedSubjects(newSubjects)
+    await saveCompletedSubjects(newSubjects)
+  }
+
   const createSchedule = async (name?: string) => {
     const scheduleName = name || `Agenda ${schedules.length + 1}`
     const newSchedule: Schedule = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       name: scheduleName,
       courseId: selectedCurriculum?.id || 'unknown',
       year: activeYear,
@@ -148,28 +189,34 @@ export function ScheduleProvider({ children }: { children: React.ReactNode }) {
   const scheduleClasses = currentSchedule?.classes || []
 
   const addClassToSchedule = (section: ClassSection) => {
-    const conflicts = checkTimeConflict(section, scheduleClasses)
+    const existingClassForSubject = scheduleClasses.find(
+      (c) => c.code === section.code,
+    )
+    const otherClasses = scheduleClasses.filter((c) => c.code !== section.code)
+
+    const conflicts = checkTimeConflict(section, otherClasses)
     if (conflicts.length > 0) {
-      alert(
+      toast.error(
         `Conflito de horário com ${conflicts.map((c) => c.name).join(', ')}`,
       )
       return
     }
 
-    const usedColors = scheduleClasses
+    const usedColors = otherClasses
       .map((c) => c.color)
       .filter(Boolean) as ScheduledClassColor[]
     const availableColors = DISCIPLINE_COLORS.filter(
       (c) => !usedColors.includes(c),
     )
     const newColor =
-      availableColors.length > 0
+      existingClassForSubject?.color ||
+      (availableColors.length > 0
         ? availableColors[Math.floor(Math.random() * availableColors.length)]
         : DISCIPLINE_COLORS[
             Math.floor(Math.random() * DISCIPLINE_COLORS.length)
-          ]
+          ])
 
-    const newClasses = [...scheduleClasses, { ...section, color: newColor }]
+    const newClasses = [...otherClasses, { ...section, color: newColor }]
     updateCurrentSchedule(newClasses)
   }
 
@@ -231,7 +278,7 @@ export function ScheduleProvider({ children }: { children: React.ReactNode }) {
 
       if (filtered.length === 0) {
         const defaultSchedule: Schedule = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           courseId: selectedCurriculum.id,
           year: activeYear,
           semester: activeSemester,
@@ -274,6 +321,7 @@ export function ScheduleProvider({ children }: { children: React.ReactNode }) {
     scheduleClasses,
     selectSchedule,
     toggleCompletedSubject,
+    toggleSubjectsCompleted,
     addClassToSchedule,
     removeClassFromSchedule,
     createSchedule,

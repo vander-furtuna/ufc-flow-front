@@ -1,5 +1,41 @@
 import type { Subject } from '@/types/course'
 
+export const getEquivalentCodes = (
+  code: string,
+  allSubjects: Subject[] = [],
+): Set<string> => {
+  const result = new Set<string>([code])
+  const sub = allSubjects.find((s) => s.code === code)
+
+  if (sub?.equivalences) {
+    for (const eq of sub.equivalences) {
+      result.add(eq)
+    }
+  }
+
+  for (const s of allSubjects) {
+    if (s.equivalences?.includes(code)) {
+      result.add(s.code)
+      if (s.equivalences) {
+        for (const eq of s.equivalences) {
+          result.add(eq)
+        }
+      }
+    }
+  }
+
+  return result
+}
+
+export const isPreReqCompleted = (
+  preReqCode: string,
+  completedSubjectCodes: string[],
+  allSubjects: Subject[] = [],
+): boolean => {
+  const equivs = getEquivalentCodes(preReqCode, allSubjects)
+  return completedSubjectCodes.some((completed) => equivs.has(completed))
+}
+
 export const checkPrerequisites = (
   subject: Subject,
   completedSubjectCodes: string[],
@@ -38,11 +74,14 @@ export const checkPrerequisites = (
       completedSubjectCodes.includes(eqCode),
     )
 
-    if (hasCompletedEquivalent) {
-      continue
+    if (existingGroup) {
+      if (!existingGroup.includes(code)) {
+        existingGroup.push(code)
+      }
+    } else {
+      groups.push([code])
     }
-
-    missing.push(preReqCode)
   }
-  return missing
+
+  return groups.map((group) => group.join(' ou '))
 }

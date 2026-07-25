@@ -1,56 +1,15 @@
 'use client'
 
 import { useCourse } from '@/contexts/course'
-import { useSchedule } from '@/contexts/schedule'
 import { useClass } from '@/contexts/class'
-import type { Subject } from '@/types/course'
-import { normalizeWords } from '@/utils/normalize-words'
-import {
-  ChevronUp,
-  Download,
-  HelpCircle,
-  Plus,
-  Search,
-  Trash2,
-} from 'lucide-react'
-import { useMemo, useState, type ComponentProps } from 'react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { CreateScheduleDialog } from '../create-schedule-dialog'
-import { DestructiveDialog } from '@/components/dialogs/destructive-dialog'
+import { ChevronUp, HelpCircle } from 'lucide-react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { ModeToggle } from '@/components/theme-toggle'
-import { SubjectItem } from './subject-item'
 import { useMediaQuery } from '@/hooks/use-media-query'
-import { cn } from '@/lib/utils'
-import { Line } from '@/components/title'
-
-function SubjectsSearchBar({ className, ...props }: ComponentProps<'input'>) {
-  return (
-    <div
-      className={cn(
-        'bg-accent/70 border-border/50 hover:bg-accent/90 absolute bottom-6 left-1/2 z-400 flex h-12 w-[calc(100%-4rem)] -translate-x-1/2 items-center rounded-full border px-4 backdrop-blur-md',
-        className,
-      )}
-    >
-      <input
-        type="text"
-        className="h-full w-full bg-transparent text-sm outline-none"
-        placeholder="Pesquisar por nome ou código..."
-        {...props}
-      />
-
-      <Search className="text-foreground/70 size-5" />
-    </div>
-  )
-}
+import { SubjectsSearchBar } from './subjects-search-bar'
 
 export function SubjectsSidebar({
   onDownloadSchedule,
@@ -62,7 +21,6 @@ export function SubjectsSidebar({
   wasTutorialShown?: boolean
 }) {
   const isMobile = useMediaQuery('(max-width: 768px)')
-  const [searchFilter, setSearchFilter] = useState('')
   const [isMobileMenuExpanded, setIsMobileMenuExpanded] = useState(false)
 
   const { currentSchedule, schedules, selectSchedule, deleteSchedule } =
@@ -385,7 +343,7 @@ export function SubjectsSidebar({
           )}
         </div>
       </div>
-      <div className="no-scrollbar relative flex h-full flex-col gap-4 pt-8 pb-20 md:overflow-y-auto">
+      <div className="no-scrollbar relative flex h-full flex-col gap-4 pb-20 md:overflow-y-auto">
         {isClassLoading && (
           <div className="bg-background/60 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
             <div className="flex flex-col items-center gap-2">
@@ -430,10 +388,7 @@ export function SubjectsSidebar({
           ),
         )}
       </div>
-      <SubjectsSearchBar
-        value={searchFilter}
-        onChange={(e) => setSearchFilter(e.target.value)}
-      />
+      <SubjectsSearchBar />
       <div className="to-background absolute bottom-0 left-1/2 z-300 h-12 w-full -translate-x-1/2 bg-linear-to-b from-transparent"></div>
     </aside>
   )
