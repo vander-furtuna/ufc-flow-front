@@ -87,7 +87,7 @@ export function DietaryBadge({
   label: labelProp,
   icon: IconProp,
   color: colorProp,
-  compact = false,
+  compact: _compact = false,
   className,
   ...props
 }: DietaryBadgeProps) {
@@ -112,16 +112,14 @@ export function DietaryBadge({
       {color && (
         <Glow
           colors={color}
-          className="pointer-events-none absolute -left-2.5 size-7 opacity-90 blur-xs"
+          className="pointer-events-none absolute -left-2.5 size-8 opacity-90 blur-md"
         />
       )}
       <Icon
         weight="bold"
-        className="text-foreground/90 relative z-10 size-3 shrink-0"
+        className="text-foreground/90 relative z-10 size-4 shrink-0"
       />
-      {!compact && label && (
-        <span className="relative z-10 font-medium">{label}</span>
-      )}
+      {label && <span className="relative z-10 font-medium">{label}</span>}
     </span>
   )
 }

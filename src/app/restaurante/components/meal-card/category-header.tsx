@@ -5,7 +5,7 @@ import type { CategoryHeaderProps } from './types'
 export function CategoryHeader({
   title,
   meta,
-  isVegetarian = false,
+  isVegetarian: _isVegetarian = false,
   variant = 'hero',
 }: CategoryHeaderProps) {
   const Icon = meta.icon
@@ -22,22 +22,22 @@ export function CategoryHeader({
         {/* Caixa de ícone unificada com Glow */}
         <div
           className={cn(
-            'bg-accent border-border relative flex shrink-0 items-center justify-center overflow-hidden border shadow-xs',
-            isHero ? 'size-8 rounded-lg' : 'size-7 rounded-md',
+            'bg-accent relative flex shrink-0 items-center justify-center overflow-hidden shadow-xs',
+            isHero ? 'size-10 rounded-lg' : 'size-9 rounded-md',
           )}
         >
           <Icon
             weight="bold"
             className={cn(
               'text-foreground/90 relative z-10',
-              isHero ? 'size-4' : 'size-3.5',
+              isHero ? 'size-5.5' : 'size-5',
             )}
           />
           <Glow
             colors={meta.glowColor}
             className={cn(
-              'pointer-events-none absolute -left-2 opacity-90 blur-xs',
-              isHero ? 'size-8' : 'size-7',
+              'pointer-events-none absolute -bottom-4 opacity-90 blur-[10px]',
+              isHero ? 'size-10' : 'size-9',
             )}
           />
         </div>
@@ -52,16 +52,6 @@ export function CategoryHeader({
           </h5>
         )}
       </div>
-
-      {isHero && isVegetarian && (
-        <span className="bg-accent border-border text-foreground/90 relative inline-flex items-center gap-1 overflow-hidden rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase shadow-2xs">
-          <Glow
-            colors="#10b981"
-            className="pointer-events-none absolute -left-2 size-6 opacity-90 blur-xs"
-          />
-          <span className="relative z-10">Opção Verde</span>
-        </span>
-      )}
     </div>
   )
 }

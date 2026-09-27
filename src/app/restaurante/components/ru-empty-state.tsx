@@ -25,11 +25,11 @@ export function RuEmptyState({
   isToday = false,
 }: RuEmptyStateProps) {
   return (
-    <div className="bg-card/40 border-border/70 flex w-full flex-col items-center justify-center rounded-3xl border p-8 text-center shadow-xs backdrop-blur-md sm:p-14">
+    <div className="ssm:p-14 flex h-full w-full flex-col items-center justify-center text-center">
       <div className="bg-accent border-border text-foreground/90 relative mb-4 flex size-14 items-center justify-center overflow-hidden rounded-2xl border shadow-xs">
         <Glow
           colors="#22d3ee"
-          className="pointer-events-none absolute -left-2 size-12 opacity-75 blur-xs"
+          className="pointer-events-none absolute -bottom-4 size-12 opacity-75 blur-sm"
         />
         <CalendarXIcon weight="bold" className="relative z-10 size-7" />
       </div>

@@ -31,7 +31,7 @@ export function MealCard({
   }
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full flex-col gap-4">
       <HeroCategoriesGrid categories={heroCategories} />
       <StandardCategoriesGrid categories={otherCategories} />
     </div>

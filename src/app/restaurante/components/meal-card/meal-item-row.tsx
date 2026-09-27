@@ -21,7 +21,9 @@ export function MealItemRow({ item, variant = 'hero' }: MealItemRowProps) {
 
   return (
     <li className="border-border/30 flex items-center justify-between gap-2 border-b py-1 text-xs last:border-b-0">
-      <span className="text-foreground/90 font-medium">{item.name}</span>
+      <span className="text-foreground/90 text-sm font-medium">
+        {item.name}
+      </span>
 
       <div className="flex shrink-0 items-center gap-1">
         {item.hasGluten && <DietaryBadge type="gluten" compact />}

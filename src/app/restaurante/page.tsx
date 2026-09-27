@@ -18,8 +18,8 @@ import {
   WarningCircleIcon,
 } from '@phosphor-icons/react'
 import { AppSearchBar } from '@/components/app-search-bar'
-import { Glow } from '@/components/glow'
-import { DIETARY_ITEMS, type DietaryType } from './components/dietary-badge'
+import { DietaryFilters } from './components/dietary-filters'
+import type { DietaryType } from './components/dietary-badge'
 
 function getDefaultMealType(): MealType {
   const now = new Date()
@@ -122,9 +122,9 @@ export default function RestaurantePage() {
     <div className="flex min-h-dvh w-full justify-center px-3 pt-4 pb-28 sm:px-6 sm:pt-6">
       <div className="flex w-full max-w-5xl flex-col gap-6">
         {/* Header do UFC Flow */}
-        <header className="bg-accent/40 border-border/60 flex h-16 w-full shrink-0 items-center justify-between rounded-2xl border px-3 shadow-xs backdrop-blur-md sm:px-5">
+        <header className="flex h-16 w-full shrink-0 items-center justify-between">
           <Link href="/" aria-label="Retornar para o início">
-            <Logo className="h-9 sm:h-10" />
+            <Logo className="h-10 sm:h-12" />
           </Link>
 
           <div className="flex items-center gap-2">
@@ -141,10 +141,10 @@ export default function RestaurantePage() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
+              <h1 className="text-foreground font-clash text-2xl font-semibold tracking-tight sm:text-4xl">
                 Cardápio do RU
               </h1>
-              <p className="text-muted-foreground text-xs sm:text-sm">
+              <p className="text-muted-foreground text-sm sm:text-sm">
                 Restaurante Universitário • {currentCampusInfo.name}
                 {currentCampusInfo.units &&
                   ` (${currentCampusInfo.units.join(', ')})`}
@@ -180,9 +180,9 @@ export default function RestaurantePage() {
           />
         </div>
 
-        {/* Abas de Refeições (Desjejum, Almoço, Jantar) */}
+        {/* Abas de Refeições (Desjejum, Almoço, Jantar) e Filtros Rápidos */}
         {!isLoading && !data?.isClosedOrEmpty && (
-          <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
             <MealTabs
               activeMeal={activeMeal}
               onSelectMeal={(m) => setUserSelectedMeal(m)}
@@ -196,39 +196,11 @@ export default function RestaurantePage() {
                 data?.meals.jantar && !data.meals.jantar.isEmpty,
               )}
             />
-
-            {/* Chips de filtro rápido */}
-            <div className="flex flex-wrap items-center gap-1.5 self-start sm:self-auto">
-              {DIETARY_ITEMS.map((item) => {
-                const isActive = isDietaryActive(item.type)
-                const Icon = item.icon
-
-                return (
-                  <button
-                    key={item.type}
-                    type="button"
-                    onClick={() => toggleDietaryFilter(item.type)}
-                    data-state={isActive ? 'active' : 'inactive'}
-                    className="bg-accent border-border text-foreground/90 group/filter relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-full border px-2.5 py-1 text-xs font-medium shadow-2xs transition-all select-none"
-                  >
-                    <Glow
-                      colors={item.color}
-                      data-state={isActive ? 'active' : 'inactive'}
-                      className="pointer-events-none absolute -left-2 size-8 opacity-0 blur-xs transition-all data-[state=active]:opacity-90"
-                    />
-                    <Icon className="relative z-10 size-3 shrink-0" />
-                    <span className="relative z-10">
-                      {item.filterLabel || item.label}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
           </div>
         )}
 
         {/* Conteúdo Principal do Cardápio */}
-        <main className="w-full">
+        <main className="h-full w-full">
           {isLoading ? (
             <RuSkeleton />
           ) : isError ? (
@@ -286,34 +258,11 @@ export default function RestaurantePage() {
           isFilterActive={onlyVegetarian || glutenFree || lactoseFree}
           filterToolbar={
             <>
-              <div className="no-scrollbar relative flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5">
-                {DIETARY_ITEMS.map((item) => {
-                  const isActive = isDietaryActive(item.type)
-                  const Icon = item.icon
-
-                  return (
-                    <button
-                      key={item.type}
-                      type="button"
-                      onClick={() => toggleDietaryFilter(item.type)}
-                      data-state={isActive ? 'active' : 'inactive'}
-                      className="bg-accent border-border text-foreground/90 group/filter relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-full border px-2.5 py-1 text-xs font-medium text-nowrap shadow-2xs transition-all select-none"
-                    >
-                      <Glow
-                        colors={item.color}
-                        data-state={isActive ? 'active' : 'inactive'}
-                        className="pointer-events-none absolute -left-2 size-8 opacity-0 blur-xs transition-all data-[state=active]:opacity-90"
-                      />
-                      <Icon
-                        weight="bold"
-                        className="relative z-10 size-3 shrink-0"
-                      />
-                      <span className="relative z-10">
-                        {item.filterLabel || item.label}
-                      </span>
-                    </button>
-                  )
-                })}
+              <div className="relative flex min-w-0 flex-1">
+                <DietaryFilters
+                  isDietaryActive={isDietaryActive}
+                  onToggleFilter={toggleDietaryFilter}
+                />
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
