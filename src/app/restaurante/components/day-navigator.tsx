@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Glow } from '@/components/glow'
 
 interface DayNavigatorProps {
   currentDate: string // YYYY-MM-DD
@@ -94,8 +95,12 @@ export function DayNavigator({
               {displayLabel()}
             </span>
             {isToday && (
-              <span className="bg-primary/10 text-primary border-primary/20 rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
-                Hoje
+              <span className="bg-accent border-border text-foreground/90 relative inline-flex items-center gap-1 overflow-hidden rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase shadow-2xs select-none">
+                <Glow
+                  colors="#22d3ee"
+                  className="pointer-events-none absolute -left-2 size-6 opacity-90 blur-xs"
+                />
+                <span className="relative z-10">Hoje</span>
               </span>
             )}
           </div>

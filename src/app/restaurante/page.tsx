@@ -12,18 +12,10 @@ import { RuEmptyState } from './components/ru-empty-state'
 import { RuSkeleton } from './components/ru-skeleton'
 import { useRuMenu } from '@/hooks/use-ru-menu'
 import { UFC_CAMPUSES, type CampusId, type MealType } from '@/types/ru'
-import {
-  CalendarDays,
-  GraduationCap,
-  Leaf,
-  Search,
-  Wheat,
-  Milk,
-  X,
-  AlertCircle,
-  RefreshCw,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { AlertCircle, BrushCleaning, RefreshCw } from 'lucide-react'
+import { AppSearchBar } from '@/components/app-search-bar'
+import { Glow } from '@/components/glow'
+import { DIETARY_ITEMS, type DietaryType } from './components/dietary-badge'
 
 function getDefaultMealType(): MealType {
   const now = new Date()
@@ -64,6 +56,19 @@ export default function RestaurantePage() {
   const [onlyVegetarian, setOnlyVegetarian] = useState(false)
   const [glutenFree, setGlutenFree] = useState(false)
   const [lactoseFree, setLactoseFree] = useState(false)
+
+  const isDietaryActive = (type: DietaryType) => {
+    if (type === 'vegetarian') return onlyVegetarian
+    if (type === 'gluten') return glutenFree
+    if (type === 'lactose') return lactoseFree
+    return false
+  }
+
+  const toggleDietaryFilter = (type: DietaryType) => {
+    if (type === 'vegetarian') setOnlyVegetarian((v) => !v)
+    else if (type === 'gluten') setGlutenFree((v) => !v)
+    else if (type === 'lactose') setLactoseFree((v) => !v)
+  }
 
   // Persiste campus selecionado
   const handleSelectCampus = (id: CampusId) => {
@@ -187,47 +192,30 @@ export default function RestaurantePage() {
 
             {/* Chips de filtro rápido */}
             <div className="flex flex-wrap items-center gap-1.5 self-start sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setOnlyVegetarian(!onlyVegetarian)}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium shadow-2xs transition-all',
-                  onlyVegetarian
-                    ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-700 shadow-xs dark:text-emerald-300'
-                    : 'bg-accent/40 text-muted-foreground hover:text-foreground border-border/60 hover:bg-accent/70',
-                )}
-              >
-                <Leaf className="size-3 shrink-0" />
-                <span>Vegetariano</span>
-              </button>
+              {DIETARY_ITEMS.map((item) => {
+                const isActive = isDietaryActive(item.type)
+                const Icon = item.icon
 
-              <button
-                type="button"
-                onClick={() => setGlutenFree(!glutenFree)}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium shadow-2xs transition-all',
-                  glutenFree
-                    ? 'border-amber-500/40 bg-amber-500/20 text-amber-700 shadow-xs dark:text-amber-300'
-                    : 'bg-accent/40 text-muted-foreground hover:text-foreground border-border/60 hover:bg-accent/70',
-                )}
-              >
-                <Wheat className="size-3 shrink-0" />
-                <span>Sem Glúten</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setLactoseFree(!lactoseFree)}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium shadow-2xs transition-all',
-                  lactoseFree
-                    ? 'border-sky-500/40 bg-sky-500/20 text-sky-700 shadow-xs dark:text-sky-300'
-                    : 'bg-accent/40 text-muted-foreground hover:text-foreground border-border/60 hover:bg-accent/70',
-                )}
-              >
-                <Milk className="size-3 shrink-0" />
-                <span>Sem Lactose</span>
-              </button>
+                return (
+                  <button
+                    key={item.type}
+                    type="button"
+                    onClick={() => toggleDietaryFilter(item.type)}
+                    data-state={isActive ? 'active' : 'inactive'}
+                    className="bg-accent border-border text-foreground/90 group/filter relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-full border px-2.5 py-1 text-xs font-medium shadow-2xs transition-all select-none"
+                  >
+                    <Glow
+                      colors={item.color}
+                      data-state={isActive ? 'active' : 'inactive'}
+                      className="pointer-events-none absolute -left-2 size-8 opacity-0 blur-xs transition-all data-[state=active]:opacity-90"
+                    />
+                    <Icon className="relative z-10 size-3 shrink-0" />
+                    <span className="relative z-10">
+                      {item.filterLabel || item.label}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -277,53 +265,66 @@ export default function RestaurantePage() {
         </main>
       </div>
 
-      {/* Dock Inferior Flutuante (Seguindo o padrão do UFC Flow) */}
-      <div className="pointer-events-none fixed bottom-6 left-0 z-50 flex w-full justify-center gap-1.5 px-4">
-        <div className="pointer-events-auto flex items-center gap-1.5">
-          {/* Atalho para Cursos */}
-          <Link
-            className="border-border/80 bg-accent/80 hover:bg-accent flex w-fit shrink-0 items-center justify-center overflow-hidden rounded-full border shadow-lg backdrop-blur-md transition-all active:scale-95"
-            href="/cursos"
-            title="Ver cursos"
-          >
-            <div className="text-foreground/90 relative flex size-12 shrink-0 items-center justify-center">
-              <GraduationCap className="size-5" />
-            </div>
-          </Link>
+      {/* Dock Inferior Flutuante Padrão UFC Flow */}
+      <div className="fixed bottom-8 left-0 z-50 flex w-full justify-center px-4">
+        <AppSearchBar
+          placeholder="Buscar no cardápio..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onClear={() => setSearchQuery('')}
+          currentNavId="restaurante"
+          isFilterActive={onlyVegetarian || glutenFree || lactoseFree}
+          filterToolbar={
+            <>
+              <div className="no-scrollbar relative flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5">
+                {DIETARY_ITEMS.map((item) => {
+                  const isActive = isDietaryActive(item.type)
+                  const Icon = item.icon
 
-          {/* Atalho para Calendário */}
-          <Link
-            className="border-border/80 bg-accent/80 hover:bg-accent flex w-fit shrink-0 items-center justify-center overflow-hidden rounded-full border shadow-lg backdrop-blur-md transition-all active:scale-95"
-            href="/calendario"
-            title="Ver calendário acadêmico"
-          >
-            <div className="text-foreground/90 relative flex size-12 shrink-0 items-center justify-center">
-              <CalendarDays className="size-5" />
-            </div>
-          </Link>
+                  return (
+                    <button
+                      key={item.type}
+                      type="button"
+                      onClick={() => toggleDietaryFilter(item.type)}
+                      data-state={isActive ? 'active' : 'inactive'}
+                      className="bg-accent border-border text-foreground/90 group/filter relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-full border px-2.5 py-1 text-xs font-medium text-nowrap shadow-2xs transition-all select-none"
+                    >
+                      <Glow
+                        colors={item.color}
+                        data-state={isActive ? 'active' : 'inactive'}
+                        className="pointer-events-none absolute -left-2 size-8 opacity-0 blur-xs transition-all data-[state=active]:opacity-90"
+                      />
+                      <Icon className="relative z-10 size-3 shrink-0" />
+                      <span className="relative z-10">
+                        {item.filterLabel || item.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
 
-          {/* Barra de Pesquisa de Pratos */}
-          <div className="border-border/80 bg-accent/80 relative flex h-12 w-full max-w-80 items-center justify-center gap-2 overflow-hidden rounded-full border px-3 shadow-lg backdrop-blur-md transition-all">
-            <Search className="text-muted-foreground size-4 shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar no cardápio..."
-              className="placeholder:text-muted-foreground/70 h-full w-full border-0 bg-transparent text-xs outline-hidden sm:text-sm"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="text-muted-foreground hover:text-foreground transition-all active:scale-90"
-              >
-                <X className="size-4" />
-              </button>
-            )}
-          </div>
-        </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <div className="bg-muted-foreground/50 h-4 w-px" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOnlyVegetarian(false)
+                    setGlutenFree(false)
+                    setLactoseFree(false)
+                  }}
+                  className="text-foreground/90 hover:text-foreground transition-all ease-in-out not-disabled:active:scale-90 disabled:opacity-40"
+                  disabled={!onlyVegetarian && !glutenFree && !lactoseFree}
+                  title="Limpar filtros"
+                  aria-label="Limpar filtros de dieta"
+                >
+                  <BrushCleaning className="size-4 sm:size-5" />
+                </button>
+              </div>
+            </>
+          }
+        />
       </div>
+      <div className="to-background pointer-events-none fixed bottom-0 z-49 h-12 w-full bg-linear-to-b from-transparent" />
     </div>
   )
 }

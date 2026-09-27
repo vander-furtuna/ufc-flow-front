@@ -6,17 +6,10 @@ import Link from 'next/link'
 import { ListView } from './components/list-view'
 import { useState } from 'react'
 import { CalendarView } from './components/calendar-view'
-import {
-  Calendar,
-  CircleAlert,
-  List,
-  Search,
-  UtensilsCrossed,
-  X,
-} from 'lucide-react'
+import { Calendar, CircleAlert, List } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Glow } from '@/components/glow'
 import { COLORS } from '@/data/colors'
+import { AppSearchBar } from '@/components/app-search-bar'
 
 export default function AcademicCalendarPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -71,58 +64,26 @@ export default function AcademicCalendarPage() {
           <CalendarView />
         )}
         {view === 'list' && (
-          <div className="fixed bottom-8 left-0 z-50 flex w-full justify-center gap-1.5 px-4">
-            <Link
-              className="border-border bg-accent/70 hover:bg-accent flex w-fit shrink-0 items-center justify-center overflow-hidden rounded-full border shadow-lg backdrop-blur-md transition-all active:scale-95"
-              href="/restaurante"
-              title="Cardápio do RU"
-            >
-              <button
-                type="button"
-                className="text-foreground/90 relative flex size-12 shrink-0 items-center justify-center transition-all"
-                aria-label="Cardápio do Restaurante Universitário"
-              >
-                <UtensilsCrossed className="size-5" />
-              </button>
-            </Link>
-            <div className="border-border bg-accent/70 relative flex h-12 w-full max-w-96 items-center justify-center gap-2 overflow-hidden rounded-full border px-3 shadow-lg backdrop-blur-md transition-all">
-              <Search className="text-muted-foreground size-6 shrink-0" />
-
-              <input
-                onChange={(event) => setSearchQuery(event.target.value)}
-                value={searchQuery}
-                type="text"
-                className="h-full w-full border-0 bg-transparent text-sm outline-0 transition-all"
-                placeholder="Pesquisar evento"
-              />
-              {searchQuery.length > 0 && (
-                <>
-                  <div className="bg-muted-foreground/50 h-4 w-px" />
-                  <button
-                    type="button"
-                    className="transition-all ease-in-out active:scale-90"
-                    onClick={() => setSearchQuery('')}
-                  >
-                    <X />
-                  </button>
-                </>
-              )}
-            </div>
-            <button
-              className="border-border bg-accent/70 hover:bg-accent/80 text-foreground/80 hover:text-foreground relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full border shadow-lg backdrop-blur-md transition-all active:scale-95"
-              onClick={() => setShowImportantEvents(!showImportantEvents)}
-              aria-label="Toggle Important Events"
-            >
-              <Glow
-                colors={COLORS.COMPULSORY}
-                className="absolute -bottom-32 size-16 opacity-0 blur-lg transition-all duration-500 data-[state=on]:-bottom-8 data-[state=on]:opacity-100"
-                data-state={showImportantEvents ? 'on' : 'off'}
-              />
-
-              <CircleAlert className="relative z-20" />
-            </button>
+          <div className="fixed bottom-8 left-0 z-50 flex w-full justify-center px-4">
+            <AppSearchBar
+              placeholder="Pesquisar evento"
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onClear={() => setSearchQuery('')}
+              currentNavId="calendario"
+              isFilterActive={showImportantEvents}
+              filterIcon={
+                <CircleAlert
+                  data-state={showImportantEvents ? 'active' : 'default'}
+                  className="data-[state=active]:text-foreground size-5 sm:size-6"
+                />
+              }
+              onFilterClick={() => setShowImportantEvents(!showImportantEvents)}
+              glowColor={COLORS.COMPULSORY}
+            />
           </div>
         )}
+        <div className="to-background pointer-events-none fixed bottom-0 z-49 h-12 w-full bg-linear-to-b from-transparent" />
       </div>
     </div>
   )

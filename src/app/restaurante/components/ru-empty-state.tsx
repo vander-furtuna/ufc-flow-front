@@ -1,6 +1,7 @@
 'use client'
 
 import { CalendarX, ArrowRight, RotateCcw } from 'lucide-react'
+import { Glow } from '@/components/glow'
 
 interface RuEmptyStateProps {
   message?: string | null
@@ -21,8 +22,12 @@ export function RuEmptyState({
 }: RuEmptyStateProps) {
   return (
     <div className="bg-card/40 border-border/70 flex w-full flex-col items-center justify-center rounded-3xl border p-8 text-center shadow-xs backdrop-blur-md sm:p-14">
-      <div className="bg-accent border-border/80 text-muted-foreground mb-4 flex size-14 items-center justify-center rounded-2xl border shadow-xs">
-        <CalendarX className="size-7" />
+      <div className="bg-accent border-border text-foreground/90 relative mb-4 flex size-14 items-center justify-center overflow-hidden rounded-2xl border shadow-xs">
+        <Glow
+          colors="#22d3ee"
+          className="pointer-events-none absolute -left-2 size-12 opacity-75 blur-xs"
+        />
+        <CalendarX className="relative z-10 size-7" />
       </div>
 
       <h3 className="text-foreground text-lg font-semibold tracking-tight sm:text-xl">

@@ -95,13 +95,23 @@ export function ListView({ search, showImportantEvents }: ListViewProps) {
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {event.description.includes('(PG)') && (
-                              <span className="mt-2 inline-block rounded bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-purple-500">
-                                PÓS-GRADUAÇÃO
+                              <span className="bg-accent border-border text-foreground/90 relative mt-2 inline-flex items-center overflow-hidden rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wider shadow-2xs select-none">
+                                <Glow
+                                  colors="#a855f7"
+                                  className="pointer-events-none absolute -left-2 size-6 opacity-90 blur-xs"
+                                />
+                                <span className="relative z-10">
+                                  PÓS-GRADUAÇÃO
+                                </span>
                               </span>
                             )}
                             {event.description.includes('(EAD)') && (
-                              <span className="mt-2 inline-block rounded bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-green-500">
-                                EAD
+                              <span className="bg-accent border-border text-foreground/90 relative mt-2 inline-flex items-center overflow-hidden rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wider shadow-2xs select-none">
+                                <Glow
+                                  colors="#10b981"
+                                  className="pointer-events-none absolute -left-2 size-6 opacity-90 blur-xs"
+                                />
+                                <span className="relative z-10">EAD</span>
                               </span>
                             )}
                           </div>

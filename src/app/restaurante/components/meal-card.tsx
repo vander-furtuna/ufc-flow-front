@@ -2,6 +2,7 @@
 
 import type { Meal, MealCategory } from '@/types/ru'
 import { DietaryBadge } from './dietary-badge'
+import { Glow } from '@/components/glow'
 import {
   Utensils,
   Leaf,
@@ -13,7 +14,6 @@ import {
   Flame,
   Coffee,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 interface MealCardProps {
   meal: Meal | null
@@ -23,86 +23,70 @@ interface MealCardProps {
   lactoseFree?: boolean
 }
 
-// Mapeia ícones e estilos semânticos para cada categoria
+// Mapeia ícones e cores de Glow semânticos para cada categoria
 function getCategoryMeta(categoryName: string) {
   const norm = categoryName.toLowerCase()
 
   if (norm.includes('principal')) {
     return {
       icon: Flame,
-      color: 'text-orange-500',
-      badgeBg:
-        'bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-400',
+      glowColor: '#f97316',
       isHero: true,
     }
   }
   if (norm.includes('vegetariano')) {
     return {
       icon: Leaf,
-      color: 'text-emerald-500',
-      badgeBg:
-        'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400',
+      glowColor: '#10b981',
       isHero: true,
     }
   }
   if (norm.includes('salada')) {
     return {
       icon: Salad,
-      color: 'text-green-500',
-      badgeBg:
-        'bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400',
+      glowColor: '#22c55e',
       isHero: false,
     }
   }
   if (norm.includes('guarni')) {
     return {
       icon: Soup,
-      color: 'text-amber-500',
-      badgeBg:
-        'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400',
+      glowColor: '#f59e0b',
       isHero: false,
     }
   }
   if (norm.includes('acompanhamento')) {
     return {
       icon: Utensils,
-      color: 'text-blue-500',
-      badgeBg:
-        'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400',
+      glowColor: '#3b82f6',
       isHero: false,
     }
   }
   if (norm.includes('suco') || norm.includes('bebida')) {
     return {
       icon: CupSoda,
-      color: 'text-pink-500',
-      badgeBg:
-        'bg-pink-500/10 border-pink-500/20 text-pink-600 dark:text-pink-400',
+      glowColor: '#ec4899',
       isHero: false,
     }
   }
   if (norm.includes('sobremesa') || norm.includes('fruta')) {
     return {
       icon: Apple,
-      color: 'text-red-500',
-      badgeBg: 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400',
+      glowColor: '#ef4444',
       isHero: false,
     }
   }
   if (norm.includes('pães') || norm.includes('especial')) {
     return {
       icon: Cookie,
-      color: 'text-amber-600',
-      badgeBg:
-        'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300',
+      glowColor: '#d97706',
       isHero: false,
     }
   }
 
   return {
     icon: Coffee,
-    color: 'text-primary',
-    badgeBg: 'bg-primary/10 border-primary/20 text-primary',
+    glowColor: '#22d3ee',
     isHero: false,
   }
 }
@@ -138,7 +122,6 @@ export function MealCard({
         .toLowerCase()
         .includes('vegetariano')
 
-      // Se usuário ativou apenas vegetariano e for categoria de carne ("Principal"), filtra se necessário
       if (
         onlyVegetarian &&
         cat.category.toLowerCase().includes('principal') &&
@@ -208,23 +191,24 @@ export function MealCard({
             return (
               <div
                 key={cat.category}
-                className={cn(
-                  'relative flex flex-col justify-between overflow-hidden rounded-2xl border p-5 shadow-xs backdrop-blur-md transition-all',
-                  isVeg
-                    ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20'
-                    : 'bg-card/60 border-border/80',
-                )}
+                className="bg-card border-border/80 hover:border-border relative flex flex-col justify-between overflow-hidden rounded-2xl border p-5 shadow-xs backdrop-blur-md transition-all"
               >
-                <div>
+                {/* Glow ambiental no canto do card */}
+                <Glow
+                  colors={meta.glowColor}
+                  className="pointer-events-none absolute -top-16 -left-16 size-40 opacity-40 blur-2xl"
+                />
+
+                <div className="relative z-10">
                   <div className="mb-3 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={cn(
-                          'flex size-8 items-center justify-center rounded-lg border',
-                          meta.badgeBg,
-                        )}
-                      >
-                        <Icon className="size-4" />
+                    <div className="flex items-center gap-2.5">
+                      {/* Caixa de ícone unificada com Glow */}
+                      <div className="bg-accent border-border relative flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border shadow-xs">
+                        <Icon className="text-foreground/90 relative z-10 size-4" />
+                        <Glow
+                          colors={meta.glowColor}
+                          className="pointer-events-none absolute -left-2 size-8 opacity-90 blur-xs"
+                        />
                       </div>
                       <h4 className="text-foreground text-sm font-semibold sm:text-base">
                         {cat.category}
@@ -232,8 +216,12 @@ export function MealCard({
                     </div>
 
                     {isVeg && (
-                      <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
-                        Opção Verde
+                      <span className="bg-accent border-border text-foreground/90 relative inline-flex items-center gap-1 overflow-hidden rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase shadow-2xs">
+                        <Glow
+                          colors="#10b981"
+                          className="pointer-events-none absolute -left-2 size-6 opacity-90 blur-xs"
+                        />
+                        <span className="relative z-10">Opção Verde</span>
                       </span>
                     )}
                   </div>
@@ -272,17 +260,23 @@ export function MealCard({
             return (
               <div
                 key={cat.category}
-                className="bg-card/40 border-border/60 hover:border-border/90 flex flex-col justify-between rounded-xl border p-4 shadow-xs backdrop-blur-sm transition-all"
+                className="bg-card/40 border-border/60 hover:border-border/90 relative flex flex-col justify-between overflow-hidden rounded-xl border p-4 shadow-xs backdrop-blur-sm transition-all"
               >
-                <div>
+                {/* Glow sutil no canto */}
+                <Glow
+                  colors={meta.glowColor}
+                  className="pointer-events-none absolute -top-12 -left-12 size-28 opacity-30 blur-xl"
+                />
+
+                <div className="relative z-10">
                   <div className="mb-3 flex items-center gap-2">
-                    <div
-                      className={cn(
-                        'flex size-7 items-center justify-center rounded-md border',
-                        meta.badgeBg,
-                      )}
-                    >
-                      <Icon className="size-3.5" />
+                    {/* Caixa de ícone unificada com Glow */}
+                    <div className="bg-accent border-border relative flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md border shadow-xs">
+                      <Icon className="text-foreground/90 relative z-10 size-3.5" />
+                      <Glow
+                        colors={meta.glowColor}
+                        className="pointer-events-none absolute -left-2 size-7 opacity-90 blur-xs"
+                      />
                     </div>
                     <h5 className="text-foreground text-xs font-semibold sm:text-sm">
                       {cat.category}

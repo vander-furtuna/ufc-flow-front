@@ -4,9 +4,9 @@ import { CourseLink } from '@/components/couse-link'
 import { Header } from '@/components/header'
 import { Line } from '@/components/title'
 import { COURSES_DATA } from '@/data/courses'
-import { CalendarDays, Search, Star, UtensilsCrossed, X } from 'lucide-react'
-import Link from 'next/link'
+import { Star } from 'lucide-react'
 import { useState } from 'react'
+import { AppSearchBar } from '@/components/app-search-bar'
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -41,57 +41,16 @@ export default function Home() {
         </article>
       </section>
 
-      <div className="fixed bottom-8 left-0 z-50 flex w-full justify-center gap-1.5 px-4">
-        <Link
-          className="border-border bg-accent/70 hover:bg-accent flex w-fit shrink-0 items-center justify-center overflow-hidden rounded-full border shadow-lg backdrop-blur-md transition-all active:scale-95"
-          href="/restaurante"
-          title="Cardápio do RU"
-        >
-          <button
-            type="button"
-            className="text-foreground/90 relative flex size-12 shrink-0 items-center justify-center transition-all"
-            aria-label="Cardápio do Restaurante Universitário"
-          >
-            <UtensilsCrossed className="size-5" />
-          </button>
-        </Link>
-        <Link
-          className="border-border bg-accent/70 hover:bg-accent flex w-fit shrink-0 items-center justify-center overflow-hidden rounded-full border shadow-lg backdrop-blur-md transition-all active:scale-95"
-          href="/calendario"
-          title="Calendário Acadêmico"
-        >
-          <button
-            type="button"
-            className="text-foreground/90 relative flex size-12 shrink-0 items-center justify-center transition-all"
-            aria-label="Calendário Acadêmico"
-          >
-            <CalendarDays className="size-5" />
-          </button>
-        </Link>
-        <div className="border-border bg-accent/70 relative flex h-12 w-full max-w-96 items-center justify-center gap-2 overflow-hidden rounded-full border px-3 shadow-lg backdrop-blur-md transition-all">
-          <Search className="text-muted-foreground size-6 shrink-0" />
-
-          <input
-            onChange={(event) => setSearchQuery(event.target.value)}
-            value={searchQuery}
-            type="text"
-            className="h-full w-full border-0 bg-transparent text-sm outline-0 transition-all"
-            placeholder="Pesquisar curso"
-          />
-          {searchQuery.length > 0 && (
-            <>
-              <div className="bg-muted-foreground/50 h-4 w-px" />
-              <button
-                type="button"
-                className="transition-all ease-in-out active:scale-90"
-                onClick={() => setSearchQuery('')}
-              >
-                <X />
-              </button>
-            </>
-          )}
-        </div>
+      <div className="fixed bottom-8 left-0 z-50 flex w-full justify-center px-4">
+        <AppSearchBar
+          placeholder="Pesquisar curso"
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onClear={() => setSearchQuery('')}
+          currentNavId="cursos"
+        />
       </div>
+      <div className="to-background pointer-events-none fixed bottom-0 z-49 h-12 w-full bg-linear-to-b from-transparent" />
     </main>
   )
 }
