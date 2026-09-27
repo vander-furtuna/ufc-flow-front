@@ -96,3 +96,19 @@ export interface RUMenuFilter {
   glutenFree?: boolean
   lactoseFree?: boolean
 }
+
+export interface RUMenuWeek {
+  id: string // `${campusId}-week-${weekStartDate}`
+  campusId: CampusId
+  campusName: string
+  weekStartDate: string // YYYY-MM-DD (Monday)
+  weekEndDate: string // YYYY-MM-DD (Friday)
+  label: string // e.g. "Semana de 28/09 a 02/10"
+  prevWeekDate: string // YYYY-MM-DD
+  nextWeekDate: string // YYYY-MM-DD
+  days: RUMenuDay[]
+  updatedAt?: string
+}
+
+export type RUViewMode = 'day' | 'week'
+export type WeekMealFilter = 'all' | 'almoco' | 'jantar' | 'desjejum'
