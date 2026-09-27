@@ -1,3 +1,5 @@
+'use client'
+
 import { useSchedule } from '@/contexts/schedule'
 import { useClass } from '@/contexts/class'
 import { useCourse } from '@/contexts/course'
@@ -5,7 +7,11 @@ import { useMediaQuery } from '@/hooks/use-media-query'
 import { dayToColIndex } from '@/utils/day-to-col'
 import { timeToMinutes } from '@/utils/time-to-minutes'
 import { cva } from 'class-variance-authority'
-import { ArrowLeftRight, Clock, Trash2 } from 'lucide-react'
+import {
+  ArrowsLeftRightIcon,
+  ClockIcon,
+  TrashIcon,
+} from '@phosphor-icons/react'
 import { useState, type ComponentProps } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import {
@@ -88,7 +94,7 @@ export function Calendar({ ref, ...props }: CalendarProps) {
         }}
       >
         <div className="bg-accent/70 border-border/80 sticky top-0 left-0 z-40 flex h-full items-center justify-center border-r border-b backdrop-blur-lg">
-          <Clock className="size-5 text-gray-400" />
+          <ClockIcon weight="bold" className="size-5 text-gray-400" />
         </div>
 
         {(isMobile ? shortDays : days).map((d, i) => (
@@ -209,7 +215,10 @@ export function Calendar({ ref, ...props }: CalendarProps) {
                           }}
                           className="cursor-pointer gap-2"
                         >
-                          <ArrowLeftRight className="size-4" />
+                          <ArrowsLeftRightIcon
+                            weight="bold"
+                            className="size-4"
+                          />
                           <span>Trocar turma</span>
                         </DropdownMenuItem>
                       )}
@@ -218,7 +227,7 @@ export function Calendar({ ref, ...props }: CalendarProps) {
                         onSelect={() => removeClassFromSchedule(slot.classInfo)}
                         className="cursor-pointer gap-2 text-red-600 focus:bg-red-500/10 focus:text-red-600 dark:text-red-400 dark:focus:bg-red-500/20 dark:focus:text-red-300"
                       >
-                        <Trash2 className="size-4" />
+                        <TrashIcon weight="bold" className="size-4" />
                         <span>Deletar</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>

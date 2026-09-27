@@ -11,14 +11,16 @@ import type { Schedule } from '@/types/schedule'
 import type { MonthGroup } from '@/types/calendar'
 import { getCalendarService } from '@/services/scrapping/get-calendar-service'
 import { normalizeWords } from '@/utils/normalize-words'
+import type { RUMenuDay } from '@/types/ru'
 
 // Configuração do banco
 const DB_NAME = 'UFCFlowDB'
-const DB_VERSION = 5 // Incrementado para incluir academic_calendar
+const DB_VERSION = 6 // Incrementado para incluir ru_menus
 const STORE_NAME = 'schedules'
 const STORE_USER_AGENDAS = 'user_schedules'
 const STORE_USER_PREFERENCES = 'user_preferences'
-const STORE_CALENDAR = 'academic_calendar' // Nova Store
+const STORE_CALENDAR = 'academic_calendar'
+const STORE_RU = 'ru_menus' // Store de Cardápio do RU
 
 const importantTerms = ['matricula', 'ira']
 
@@ -81,6 +83,12 @@ class IndexedDBStorage {
         if (!db.objectStoreNames.contains(STORE_CALENDAR)) {
           // A chave será o ano (ex: 2026)
           db.createObjectStore(STORE_CALENDAR, { keyPath: 'year' })
+        }
+
+        // --- Nova Store de Cardápio do RU (Versão 6) ---
+        if (!db.objectStoreNames.contains(STORE_RU)) {
+          // A chave será id composta: campusId-date (ex: "4-2026-09-25")
+          db.createObjectStore(STORE_RU, { keyPath: 'id' })
         }
       },
     })
@@ -310,10 +318,35 @@ class IndexedDBStorage {
     const record = await this.db.get(STORE_CALENDAR, year)
     return record?.data || null
   }
+
+  // --- FUNÇÕES DO CARDÁPIO DO RU ---
+
+  async saveRuMenu(menu: RUMenuDay): Promise<void> {
+    await this.init()
+    if (!this.db) throw new Error('Database not initialized')
+
+    await this.db.put(STORE_RU, {
+      ...menu,
+      updatedAt: new Date().toISOString(),
+    })
+  }
+
+  async getRuMenu(campusId: number, date: string): Promise<RUMenuDay | null> {
+    await this.init()
+    if (!this.db) throw new Error('Database not initialized')
+
+    const key = `${campusId}-${date}`
+    const record = await this.db.get(STORE_RU, key)
+    return (record as RUMenuDay) || null
+  }
 }
 
 // Instância singleton
 const storage = new IndexedDBStorage()
+
+export const getRuMenu = (campusId: number, date: string) =>
+  storage.getRuMenu(campusId, date)
+export const saveRuMenu = (menu: RUMenuDay) => storage.saveRuMenu(menu)
 
 export const getSchedulesByCourse = (courseId: string) =>
   storage.getSchedulesByCourse(courseId)

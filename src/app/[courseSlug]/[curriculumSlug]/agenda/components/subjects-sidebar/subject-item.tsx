@@ -10,13 +10,13 @@ import { capitalizeWords } from '@/utils/capitalize-words'
 import { checkPrerequisites } from '@/utils/check-prerequesites'
 import { getSubjectStyle } from '@/utils/get-subject-style'
 import {
-  AlertCircle,
-  CalendarIcon,
-  Check,
-  Copy,
-  Tag,
+  CalendarBlankIcon,
+  CheckIcon,
+  CopyIcon,
+  TagIcon,
   TrashIcon,
-} from 'lucide-react'
+  WarningCircleIcon,
+} from '@phosphor-icons/react'
 import { SelectedSubjectDialog } from '../selected-subject-dialog'
 import { useClass } from '@/contexts/class'
 import { useCourse } from '@/contexts/course'
@@ -155,7 +155,7 @@ export function SubjectItem({
       >
         <div
           className={cn(
-            'flex h-full w-full flex-col items-start justify-between gap-1 cursor-pointer',
+            'flex h-full w-full cursor-pointer flex-col items-start justify-between gap-1',
             (isScheduled || isCompleted) && 'pointer-events-none',
           )}
         >
@@ -187,7 +187,7 @@ export function SubjectItem({
                   }}
                   className="text-muted-foreground/80 hover:text-foreground inline-flex shrink-0 cursor-pointer items-center justify-center rounded-xs p-0.5 transition-colors focus:outline-hidden"
                 >
-                  <Tag className="size-4" />
+                  <TagIcon weight="bold" className="size-4" />
                 </button>
               </PopoverTrigger>
               <PopoverContent
@@ -218,9 +218,12 @@ export function SubjectItem({
                   title="Copiar código"
                 >
                   {isCopied ? (
-                    <Check className="size-3.5 text-emerald-500 dark:text-emerald-400" />
+                    <CheckIcon
+                      weight="bold"
+                      className="size-3.5 text-emerald-500 dark:text-emerald-400"
+                    />
                   ) : (
-                    <Copy className="size-3.5" />
+                    <CopyIcon weight="bold" className="size-3.5" />
                   )}
                 </button>
               </PopoverContent>
@@ -231,7 +234,7 @@ export function SubjectItem({
           </div>
           {isLocked && (
             <div className="flex items-center gap-1 text-red-600 dark:text-red-400">
-              <AlertCircle className="size-3" />
+              <WarningCircleIcon weight="bold" className="size-3" />
               <span className="text-xs">
                 {missingPreRequisites.length === 1
                   ? 'Falta 1 pré-requisito'
@@ -241,7 +244,7 @@ export function SubjectItem({
           )}
           {isScheduled && (
             <div className="flex w-full items-center gap-1 text-xs text-inherit">
-              <CalendarIcon className="size-4" />
+              <CalendarBlankIcon weight="bold" className="size-4" />
               <span>Agendado</span>
             </div>
           )}
@@ -262,7 +265,7 @@ export function SubjectItem({
             }}
             className="ml-auto rounded-md bg-red-500/20 p-1 text-red-500 hover:underline"
           >
-            <TrashIcon className="size-4" />
+            <TrashIcon weight="bold" className="size-4" />
           </button>
         )}
       </div>
