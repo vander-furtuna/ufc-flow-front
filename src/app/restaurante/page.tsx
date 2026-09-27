@@ -12,7 +12,11 @@ import { RuEmptyState } from './components/ru-empty-state'
 import { RuSkeleton } from './components/ru-skeleton'
 import { useRuMenu } from '@/hooks/use-ru-menu'
 import { UFC_CAMPUSES, type CampusId, type MealType } from '@/types/ru'
-import { AlertCircle, BrushCleaning, RefreshCw } from 'lucide-react'
+import {
+  ArrowsClockwiseIcon,
+  BroomIcon,
+  WarningCircleIcon,
+} from '@phosphor-icons/react'
 import { AppSearchBar } from '@/components/app-search-bar'
 import { Glow } from '@/components/glow'
 import { DIETARY_ITEMS, type DietaryType } from './components/dietary-badge'
@@ -149,7 +153,10 @@ export default function RestaurantePage() {
 
             {isFetching && !isLoading && (
               <div className="text-muted-foreground flex animate-pulse items-center gap-1.5 text-xs">
-                <RefreshCw className="size-3.5 animate-spin" />
+                <ArrowsClockwiseIcon
+                  weight="bold"
+                  className="size-3.5 animate-spin"
+                />
                 <span>Atualizando cardápio...</span>
               </div>
             )}
@@ -226,7 +233,10 @@ export default function RestaurantePage() {
             <RuSkeleton />
           ) : isError ? (
             <div className="bg-destructive/10 border-destructive/30 flex flex-col items-center justify-center rounded-2xl border p-8 text-center">
-              <AlertCircle className="text-destructive mb-2 size-8" />
+              <WarningCircleIcon
+                weight="bold"
+                className="text-destructive mb-2 size-8"
+              />
               <h3 className="text-foreground text-base font-semibold">
                 Falha ao carregar o cardápio
               </h3>
@@ -294,7 +304,10 @@ export default function RestaurantePage() {
                         data-state={isActive ? 'active' : 'inactive'}
                         className="pointer-events-none absolute -left-2 size-8 opacity-0 blur-xs transition-all data-[state=active]:opacity-90"
                       />
-                      <Icon className="relative z-10 size-3 shrink-0" />
+                      <Icon
+                        weight="bold"
+                        className="relative z-10 size-3 shrink-0"
+                      />
                       <span className="relative z-10">
                         {item.filterLabel || item.label}
                       </span>
@@ -317,7 +330,7 @@ export default function RestaurantePage() {
                   title="Limpar filtros"
                   aria-label="Limpar filtros de dieta"
                 >
-                  <BrushCleaning className="size-4 sm:size-5" />
+                  <BroomIcon weight="bold" className="size-4 sm:size-5" />
                 </button>
               </div>
             </>

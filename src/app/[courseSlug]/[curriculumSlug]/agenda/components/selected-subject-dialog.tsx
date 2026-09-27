@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,7 +12,13 @@ import {
 import type { ClassSection, SubjectGroup } from '@/types/class'
 import type { Subject } from '@/types/course'
 import { capitalizeWords } from '@/utils/capitalize-words'
-import { AlertCircle, AlertTriangle, Check, Plus, User } from 'lucide-react'
+import {
+  CheckIcon,
+  PlusIcon,
+  UserIcon,
+  WarningCircleIcon,
+  WarningIcon,
+} from '@phosphor-icons/react'
 import { useState, type ComponentProps } from 'react'
 import { TimePill } from './time-pill'
 import { useSchedule } from '@/contexts/schedule'
@@ -112,7 +120,10 @@ export function SelectedSubjectDialog({
               {missingPreRequisites.length > 0 && (
                 <div className="flex w-full flex-col gap-1.5 rounded-md border border-amber-300 bg-amber-500/20 p-3 text-amber-800 dark:border-amber-400/50 dark:bg-amber-400/20 dark:text-amber-300">
                   <div className="flex items-center gap-2 text-sm font-medium">
-                    <AlertCircle className="size-4 shrink-0" />
+                    <WarningCircleIcon
+                      weight="bold"
+                      className="size-4 shrink-0"
+                    />
                     <span>
                       {missingPreRequisites.length === 1
                         ? 'Pré-requisito pendente:'
@@ -185,11 +196,12 @@ export function SelectedSubjectDialog({
                           </strong>
                           {isCurrentClass && (
                             <span className="flex items-center gap-1 rounded-md border border-emerald-400/40 bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-400/20 dark:text-emerald-300">
-                              <Check className="size-3.5" /> Selecionada
+                              <CheckIcon weight="bold" className="size-3.5" />{' '}
+                              Selecionada
                             </span>
                           )}
                           <span className="bg-accent/50 flex items-center gap-1 rounded-md px-2 py-1 text-sm">
-                            <User className="size-4" />{' '}
+                            <UserIcon weight="bold" className="size-4" />{' '}
                             {classItem.reservedSeats}
                           </span>
                         </div>
@@ -211,7 +223,10 @@ export function SelectedSubjectDialog({
                       </div>
                       {hasConflict && !isCurrentClass && (
                         <div className="flex items-center gap-2 text-xs text-red-600">
-                          <AlertCircle className="size-4 shrink-0" />
+                          <WarningCircleIcon
+                            weight="bold"
+                            className="size-4 shrink-0"
+                          />
                           <span>
                             Conflita com:{' '}
                             {conflicts
@@ -236,11 +251,11 @@ export function SelectedSubjectDialog({
                       disabled={hasConflict || isCurrentClass}
                     >
                       {isCurrentClass ? (
-                        <Check className="size-5" />
+                        <CheckIcon weight="bold" className="size-5" />
                       ) : hasConflict ? (
-                        <AlertTriangle className="size-5" />
+                        <WarningIcon weight="bold" className="size-5" />
                       ) : (
-                        <Plus className="size-5" />
+                        <PlusIcon weight="bold" className="size-5" />
                       )}
                     </Button>
                   </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, X, ListFilter } from 'lucide-react'
+import { FunnelSimpleIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react'
 import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Glow } from './glow'
@@ -131,12 +131,12 @@ export function AppSearchBar({
               >
                 <motion.div className="flex cursor-pointer items-center gap-1">
                   <motion.div
-                    className="border-border bg-accent/70 text-foreground/90 hover:text-foreground group/nav relative flex size-12 w-full items-center justify-center gap-2 overflow-hidden rounded-full border px-3 shadow-lg backdrop-blur-md transition-colors"
+                    className="border-border bg-accent/70 text-foreground/90 hover:text-foreground group/nav relative flex size-12 items-center justify-center gap-2 overflow-hidden rounded-full border px-3 shadow-lg backdrop-blur-md transition-colors"
                     initial={{ opacity: 0, x: -10, filter: 'blur(10px)' }}
                     animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                     exit={{ opacity: 0, x: -10, filter: 'blur(10px)' }}
                     transition={{
-                      duration: 0.2,
+                      duration: 0.15,
                       delay: (othersNavItems.length - index) * 0.08,
                     }}
                   >
@@ -187,7 +187,10 @@ export function AppSearchBar({
 
         {/* Pílula de Pesquisa */}
         <div className="border-border bg-accent/70 relative flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-full border px-3 shadow-lg backdrop-blur-md transition-all">
-          <Search className="text-muted-foreground size-5 shrink-0 sm:size-6" />
+          <MagnifyingGlassIcon
+            weight="bold"
+            className="text-muted-foreground size-5 shrink-0 sm:size-6"
+          />
 
           <input
             onChange={(e) => onChange(e.target.value)}
@@ -204,7 +207,7 @@ export function AppSearchBar({
               onClick={onClear}
               aria-label="Limpar pesquisa"
             >
-              <X className="size-4" />
+              <XIcon weight="bold" className="size-4" />
             </button>
           )}
 
@@ -218,7 +221,8 @@ export function AppSearchBar({
                 aria-label="Opções de filtro"
               >
                 {filterIcon || (
-                  <ListFilter
+                  <FunnelSimpleIcon
+                    weight="bold"
                     data-state={
                       isFilterActive || optionsMode === 'filters'
                         ? 'active'

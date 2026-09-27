@@ -1,13 +1,19 @@
 'use client'
 
-import { Coffee, UtensilsCrossed, Moon } from 'lucide-react'
+import {
+  CoffeeIcon,
+  ForkKnifeIcon,
+  MoonIcon,
+  type IconProps,
+} from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import type { MealType } from '@/types/ru'
+import type { ComponentType } from 'react'
 
 interface MealTabItem {
   type: MealType
   label: string
-  icon: typeof Coffee
+  icon: ComponentType<IconProps>
   available: boolean
 }
 
@@ -30,19 +36,19 @@ export function MealTabs({
     {
       type: 'desjejum',
       label: 'Desjejum',
-      icon: Coffee,
+      icon: CoffeeIcon,
       available: hasDesjejum,
     },
     {
       type: 'almoco',
       label: 'Almoço',
-      icon: UtensilsCrossed,
+      icon: ForkKnifeIcon,
       available: hasAlmoco,
     },
     {
       type: 'jantar',
       label: 'Jantar',
-      icon: Moon,
+      icon: MoonIcon,
       available: hasJantar,
     },
   ]
@@ -66,7 +72,7 @@ export function MealTabs({
               !tab.available && 'opacity-50',
             )}
           >
-            <Icon className="size-4 shrink-0" />
+            <Icon weight="bold" className="size-4 shrink-0" />
             <span>{tab.label}</span>
           </button>
         )

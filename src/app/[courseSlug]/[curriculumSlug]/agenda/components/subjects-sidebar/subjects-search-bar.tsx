@@ -1,6 +1,10 @@
 'use client'
 
-import { BrushCleaning, ListFilter, Search } from 'lucide-react'
+import {
+  BroomIcon,
+  FunnelSimpleIcon,
+  MagnifyingGlassIcon,
+} from '@phosphor-icons/react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Glow } from '@/components/glow'
 import { Filters } from '@/components/filter/filters'
@@ -75,7 +79,10 @@ export function SubjectsSearchBar({ className }: { className?: string }) {
                 className="transition-all ease-in-out not-disabled:active:scale-90 disabled:opacity-50"
                 disabled={!isFiltersActive}
               >
-                <BrushCleaning className="text-foreground/90 size-5" />
+                <BroomIcon
+                  weight="bold"
+                  className="text-foreground/90 size-5"
+                />
               </button>
             </div>
           </ToolBar>
@@ -141,7 +148,10 @@ export function SubjectsSearchBar({ className }: { className?: string }) {
           </button>
         </div>
         <div className="border-border bg-accent/70 relative flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-full border px-3 shadow-lg backdrop-blur-md transition-all">
-          <Search className="text-muted-foreground size-6 shrink-0" />
+          <MagnifyingGlassIcon
+            weight="bold"
+            className="text-muted-foreground size-6 shrink-0"
+          />
 
           <input
             onChange={(e) => changeQueryFilter(e.target.value)}
@@ -156,7 +166,8 @@ export function SubjectsSearchBar({ className }: { className?: string }) {
             onClick={() => handleSelectMode('filters')}
             className="transition-all ease-in-out active:scale-90"
           >
-            <ListFilter
+            <FunnelSimpleIcon
+              weight="bold"
               data-state={
                 isFiltersActive || optionsMode === 'filters'
                   ? 'active'

@@ -1,6 +1,10 @@
 'use client'
 
-import { CalendarX, ArrowRight, RotateCcw } from 'lucide-react'
+import {
+  ArrowCounterClockwiseIcon,
+  ArrowRightIcon,
+  CalendarXIcon,
+} from '@phosphor-icons/react'
 import { Glow } from '@/components/glow'
 
 interface RuEmptyStateProps {
@@ -27,7 +31,7 @@ export function RuEmptyState({
           colors="#22d3ee"
           className="pointer-events-none absolute -left-2 size-12 opacity-75 blur-xs"
         />
-        <CalendarX className="relative z-10 size-7" />
+        <CalendarXIcon weight="bold" className="relative z-10 size-7" />
       </div>
 
       <h3 className="text-foreground text-lg font-semibold tracking-tight sm:text-xl">
@@ -47,7 +51,7 @@ export function RuEmptyState({
             className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-medium shadow-xs transition-all active:scale-95 sm:text-sm"
           >
             <span>Ver {nextLabel || 'Próximo dia disponível'}</span>
-            <ArrowRight className="size-4" />
+            <ArrowRightIcon weight="bold" className="size-4" />
           </button>
         )}
 
@@ -57,7 +61,7 @@ export function RuEmptyState({
             onClick={onResetToday}
             className="bg-accent/80 hover:bg-accent text-foreground border-border flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-medium transition-all active:scale-95 sm:text-sm"
           >
-            <RotateCcw className="size-3.5" />
+            <ArrowCounterClockwiseIcon weight="bold" className="size-3.5" />
             <span>Voltar para hoje</span>
           </button>
         )}

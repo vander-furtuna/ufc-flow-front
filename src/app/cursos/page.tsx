@@ -4,7 +4,7 @@ import { CourseLink } from '@/components/couse-link'
 import { Header } from '@/components/header'
 import { Line } from '@/components/title'
 import { COURSES_DATA } from '@/data/courses'
-import { Star } from 'lucide-react'
+import { StarIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { AppSearchBar } from '@/components/app-search-bar'
 
@@ -30,7 +30,7 @@ export default function Home() {
             <Line />
           </div>
           <div className="flex w-full items-center justify-start gap-1.5">
-            <Star className="text-foreground size-5" />
+            <StarIcon weight="bold" className="text-foreground size-5" />
             <span>Grade Vigente</span>
           </div>
           <div className="grid w-full grid-flow-row grid-cols-1 gap-4 lg:grid-cols-2">

@@ -1,5 +1,10 @@
 import type { ComponentType, HTMLAttributes } from 'react'
-import { Wheat, Milk, Leaf } from 'lucide-react'
+import {
+  DropIcon,
+  GrainsIcon,
+  LeafIcon,
+  type IconProps,
+} from '@phosphor-icons/react'
 import { Glow } from '@/components/glow'
 import { cn } from '@/lib/utils'
 
@@ -10,7 +15,7 @@ export interface DietaryItemConfig {
   title: string
   label: string
   filterLabel?: string
-  icon: ComponentType<{ className?: string }>
+  icon: ComponentType<IconProps>
   color: string
 }
 
@@ -20,7 +25,7 @@ export const DIETARY_ITEMS: DietaryItemConfig[] = [
     title: 'Opção Vegetariana',
     label: 'Vegetariano',
     filterLabel: 'Vegetariano',
-    icon: Leaf,
+    icon: LeafIcon,
     color: '#10b981',
   },
   {
@@ -28,7 +33,7 @@ export const DIETARY_ITEMS: DietaryItemConfig[] = [
     title: 'Contém Glúten',
     label: 'Glúten',
     filterLabel: 'Sem Glúten',
-    icon: Wheat,
+    icon: GrainsIcon,
     color: '#f59e0b',
   },
   {
@@ -36,7 +41,7 @@ export const DIETARY_ITEMS: DietaryItemConfig[] = [
     title: 'Contém Lactose',
     label: 'Lactose',
     filterLabel: 'Sem Lactose',
-    icon: Milk,
+    icon: DropIcon,
     color: '#06b6d4',
   },
 ]
@@ -66,7 +71,7 @@ export interface DietaryBadgeProps extends HTMLAttributes<HTMLSpanElement> {
   /** Sobrescrita do label textual visível */
   label?: string
   /** Sobrescrita do ícone */
-  icon?: ComponentType<{ className?: string }>
+  icon?: ComponentType<IconProps>
   /** Sobrescrita da cor do Glow */
   color?: string
   /** Oculta o label de texto, exibindo apenas o ícone com Glow e tooltip */
@@ -110,7 +115,10 @@ export function DietaryBadge({
           className="pointer-events-none absolute -left-2.5 size-7 opacity-90 blur-xs"
         />
       )}
-      <Icon className="text-foreground/90 relative z-10 size-3 shrink-0" />
+      <Icon
+        weight="bold"
+        className="text-foreground/90 relative z-10 size-3 shrink-0"
+      />
       {!compact && label && (
         <span className="relative z-10 font-medium">{label}</span>
       )}

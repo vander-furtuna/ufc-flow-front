@@ -1,6 +1,10 @@
 'use client'
 
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
+import {
+  ArrowCounterClockwiseIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
+} from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { Glow } from '@/components/glow'
 
@@ -81,7 +85,7 @@ export function DayNavigator({
           isLoading && 'cursor-not-allowed opacity-50',
         )}
       >
-        <ChevronLeft className="size-4 shrink-0" />
+        <CaretLeftIcon weight="bold" className="size-4 shrink-0" />
         <span className="hidden max-w-[110px] truncate sm:inline">
           {prevLabel || 'Anterior'}
         </span>
@@ -114,7 +118,10 @@ export function DayNavigator({
             title="Voltar para o cardápio de hoje"
             className="text-muted-foreground hover:text-foreground hover:bg-accent flex items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-xs font-medium transition-all"
           >
-            <RotateCcw className="size-3 shrink-0" />
+            <ArrowCounterClockwiseIcon
+              weight="bold"
+              className="size-3 shrink-0"
+            />
             <span className="hidden md:inline">Hoje</span>
           </button>
         )}
@@ -134,7 +141,7 @@ export function DayNavigator({
         <span className="hidden max-w-[110px] truncate sm:inline">
           {nextLabel || 'Próximo'}
         </span>
-        <ChevronRight className="size-4 shrink-0" />
+        <CaretRightIcon weight="bold" className="size-4 shrink-0" />
       </button>
     </div>
   )

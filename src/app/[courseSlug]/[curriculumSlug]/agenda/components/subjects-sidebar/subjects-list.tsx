@@ -9,7 +9,7 @@ import { NATURE_CONFIG } from '@/data/colors'
 import type { Subject } from '@/types/course'
 import { Line } from '@/components/title'
 import { Button } from '@/components/ui/button'
-import { CheckCheck } from 'lucide-react'
+import { ChecksIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { useMemo } from 'react'
 import { VisualSettings } from './visual-settings'
@@ -176,7 +176,7 @@ export function SubjectsList({ showLine = true }: { showLine?: boolean }) {
                       : 'Marcar todas deste semestre como concluídas'
                   }
                 >
-                  <CheckCheck className="size-4" />
+                  <ChecksIcon weight="bold" className="size-4" />
                   <span className="hidden sm:inline">
                     {areAllCompleted ? 'Concluído' : 'Concluir todas'}
                   </span>

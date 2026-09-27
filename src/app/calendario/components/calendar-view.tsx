@@ -1,8 +1,10 @@
+'use client'
+
 import { Glow } from '@/components/glow'
 import { useCalendar } from '@/contexts/calendar'
 import { COLORS } from '@/data/colors'
 import { cn } from '@/lib/utils'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import CalendarDayDialog from './calendar-day-dialog'
 
@@ -169,7 +171,7 @@ export function CalendarView() {
             onClick={prevMonth}
             className="hover:bg-muted text-foreground border-border rounded-full border p-2 transition-colors"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <CaretLeftIcon weight="bold" className="h-5 w-5" />
           </button>
           <button
             onClick={() => setCurrentDate(new Date())}
@@ -181,7 +183,7 @@ export function CalendarView() {
             onClick={nextMonth}
             className="hover:bg-muted text-foreground border-border rounded-full border p-2 transition-colors"
           >
-            <ChevronRight className="h-5 w-5" />
+            <CaretRightIcon weight="bold" className="h-5 w-5" />
           </button>
         </div>
       </div>

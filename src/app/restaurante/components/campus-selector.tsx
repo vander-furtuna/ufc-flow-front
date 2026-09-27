@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { UFC_CAMPUSES, type CampusId } from '@/types/ru'
-import { Check, ChevronDown, MapPin } from 'lucide-react'
+import { CaretDownIcon, CheckIcon, MapPinIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
 interface CampusSelectorProps {
@@ -37,11 +37,17 @@ export function CampusSelector({
           )}
           aria-label="Selecionar campus do Restaurante Universitário"
         >
-          <MapPin className="text-primary size-4 shrink-0 transition-transform group-hover:scale-110" />
+          <MapPinIcon
+            weight="bold"
+            className="text-primary size-4 shrink-0 transition-transform group-hover:scale-110"
+          />
           <span className="max-w-[130px] truncate font-medium tracking-tight sm:max-w-none">
             {currentCampus.name}
           </span>
-          <ChevronDown className="text-muted-foreground size-3.5 shrink-0 transition-transform group-data-[state=open]:rotate-180" />
+          <CaretDownIcon
+            weight="bold"
+            className="text-muted-foreground size-3.5 shrink-0 transition-transform group-data-[state=open]:rotate-180"
+          />
         </button>
       </DropdownMenuTrigger>
 
@@ -73,7 +79,10 @@ export function CampusSelector({
               </div>
 
               {isSelected && (
-                <Check className="text-primary ml-2 size-4 shrink-0" />
+                <CheckIcon
+                  weight="bold"
+                  className="text-primary ml-2 size-4 shrink-0"
+                />
               )}
             </DropdownMenuItem>
           )

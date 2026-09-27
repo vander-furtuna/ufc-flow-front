@@ -1,10 +1,10 @@
 import {
-  CalendarClock,
-  CalendarDays,
-  GraduationCap,
-  LayoutGrid,
-  UtensilsCrossed,
-} from 'lucide-react'
+  CalendarCheckIcon,
+  CalendarDotsIcon,
+  ForkKnifeIcon,
+  GraduationCapIcon,
+  SquaresFourIcon,
+} from '@phosphor-icons/react/ssr'
 import type { JSX } from 'react'
 
 export function mountHref(path: string, baseHref?: string) {
@@ -20,33 +20,33 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
   {
+    id: 'restaurante',
+    label: 'Cardápio do RU',
+    icon: <ForkKnifeIcon weight="bold" className="size-6 text-inherit" />,
+    href: () => '/restaurante',
+  },
+  {
     id: 'cursos',
     label: 'Cursos',
-    icon: <GraduationCap className="size-6 text-inherit" />,
+    icon: <GraduationCapIcon weight="bold" className="size-6 text-inherit" />,
     href: () => '/cursos',
   },
   {
     id: 'grade',
     label: 'Grade Curricular',
-    icon: <LayoutGrid className="size-6 text-inherit" />,
+    icon: <SquaresFourIcon weight="bold" className="size-6 text-inherit" />,
     href: (baseHref?: string) => mountHref('', baseHref) || '/',
   },
   {
     id: 'agenda',
     label: 'Simular Agenda',
-    icon: <CalendarClock className="size-6 text-inherit" />,
+    icon: <CalendarCheckIcon weight="bold" className="size-6 text-inherit" />,
     href: (baseHref?: string) => (baseHref ? `${baseHref}/agenda` : '/'),
   },
   {
     id: 'calendario',
     label: 'Calendário Acadêmico',
-    icon: <CalendarDays className="size-6 text-inherit" />,
+    icon: <CalendarDotsIcon weight="bold" className="size-6 text-inherit" />,
     href: () => '/calendario',
-  },
-  {
-    id: 'restaurante',
-    label: 'Cardápio do RU',
-    icon: <UtensilsCrossed className="size-6 text-inherit" />,
-    href: () => '/restaurante',
   },
 ]

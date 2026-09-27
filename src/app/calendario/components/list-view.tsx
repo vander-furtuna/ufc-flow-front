@@ -1,10 +1,17 @@
+'use client'
+
 import { Glow } from '@/components/glow'
 import { useCalendar } from '@/contexts/calendar'
 import { COLORS } from '@/data/colors'
 import { useDebounce } from '@/hooks/use-debounce'
 import { cn } from '@/lib/utils'
 import { normalizeWords } from '@/utils/normalize-words'
-import { Calendar, CalendarDays, ChevronUp, Clock } from 'lucide-react'
+import {
+  CalendarBlankIcon,
+  CalendarDotsIcon,
+  CaretUpIcon,
+  ClockIcon,
+} from '@phosphor-icons/react'
 import { useState } from 'react'
 
 type ListViewProps = {
@@ -52,7 +59,7 @@ export function ListView({ search, showImportantEvents }: ListViewProps) {
             >
               <div className="bg-background/70 border-border sticky top-0 z-30 mb-4 flex items-center gap-3 border-b py-3 backdrop-blur">
                 <div className="bg-primary text-primary-foreground rounded-md p-2 shadow-sm">
-                  <CalendarDays className="h-5 w-5" />
+                  <CalendarDotsIcon weight="bold" className="h-5 w-5" />
                 </div>
                 <h2 className="text-foreground font-clash text-2xl font-semibold tracking-tight capitalize">
                   {group.monthName}{' '}
@@ -125,7 +132,10 @@ export function ListView({ search, showImportantEvents }: ListViewProps) {
           ))
         ) : (
           <div className="w-full p-8 text-center">
-            <Calendar className="mx-auto mb-4 h-12 w-12 opacity-20" />
+            <CalendarBlankIcon
+              weight="bold"
+              className="mx-auto mb-4 h-12 w-12 opacity-20"
+            />
             <p className="text-muted-foreground text-sm">
               Nenhum evento encontrado.
             </p>
@@ -137,7 +147,7 @@ export function ListView({ search, showImportantEvents }: ListViewProps) {
           <div className="bg-card border-border overflow-hidden rounded-lg border transition-colors">
             <div className="bg-muted/50 border-border flex items-center justify-between gap-2 border-b px-3 py-3 md:px-5 md:py-4">
               <div className="flex items-center gap-2">
-                <Clock className="text-primary h-4 w-4" />
+                <ClockIcon weight="bold" className="text-primary h-4 w-4" />
                 <h3 className="text-foreground text-sm font-bold tracking-wider uppercase">
                   Próximos Eventos
                 </h3>
@@ -147,7 +157,8 @@ export function ListView({ search, showImportantEvents }: ListViewProps) {
                 className="text-primary text-xs font-medium underline transition-all hover:opacity-80 md:hidden"
                 onClick={() => setShowUpcomingEvents(!showUpcomingEvents)}
               >
-                <ChevronUp
+                <CaretUpIcon
+                  weight="bold"
                   className={cn(
                     'transition-transform',
                     showUpcomingEvents && 'rotate-180',

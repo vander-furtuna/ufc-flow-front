@@ -6,7 +6,11 @@ import Link from 'next/link'
 import { ListView } from './components/list-view'
 import { useState } from 'react'
 import { CalendarView } from './components/calendar-view'
-import { Calendar, CircleAlert, List } from 'lucide-react'
+import {
+  CalendarBlankIcon,
+  ListIcon,
+  WarningCircleIcon,
+} from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { COLORS } from '@/data/colors'
 import { AppSearchBar } from '@/components/app-search-bar'
@@ -37,7 +41,7 @@ export default function AcademicCalendarPage() {
                   view === 'list' && 'bg-background text-primary border-border',
                 )}
               >
-                <List className="h-4 w-4" />
+                <ListIcon weight="bold" className="h-4 w-4" />
                 <span className="hidden sm:inline">Lista</span>
               </button>
               <button
@@ -48,7 +52,7 @@ export default function AcademicCalendarPage() {
                     'bg-background text-primary border-border',
                 )}
               >
-                <Calendar className="h-4 w-4" />
+                <CalendarBlankIcon weight="bold" className="h-4 w-4" />
                 <span className="hidden sm:inline">Calendário</span>
               </button>
             </div>
@@ -73,7 +77,8 @@ export default function AcademicCalendarPage() {
               currentNavId="calendario"
               isFilterActive={showImportantEvents}
               filterIcon={
-                <CircleAlert
+                <WarningCircleIcon
+                  weight="bold"
                   data-state={showImportantEvents ? 'active' : 'default'}
                   className="data-[state=active]:text-foreground size-5 sm:size-6"
                 />
