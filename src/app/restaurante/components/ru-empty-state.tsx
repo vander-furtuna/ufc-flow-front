@@ -26,7 +26,7 @@ export function RuEmptyState({
 }: RuEmptyStateProps) {
   return (
     <div className="ssm:p-14 flex h-full w-full flex-col items-center justify-center text-center">
-      <div className="bg-accent border-border text-foreground/90 relative mb-4 flex size-14 items-center justify-center overflow-hidden rounded-2xl border shadow-xs">
+      <div className="relative mb-4 flex size-14 items-center justify-center overflow-hidden">
         <Glow
           colors="#22d3ee"
           className="pointer-events-none absolute -bottom-4 size-12 opacity-75 blur-sm"

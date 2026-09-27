@@ -15,6 +15,7 @@ import { UFC_CAMPUSES, type CampusId, type MealType } from '@/types/ru'
 import {
   ArrowsClockwiseIcon,
   BroomIcon,
+  CreditCardIcon,
   WarningCircleIcon,
 } from '@phosphor-icons/react'
 import { AppSearchBar } from '@/components/app-search-bar'
@@ -139,27 +140,49 @@ export default function RestaurantePage() {
 
         {/* Título & Navegador de Datas */}
         <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-between gap-3 sm:gap-4">
             <div>
-              <h1 className="text-foreground font-clash text-2xl font-semibold tracking-tight sm:text-4xl">
+              <h1 className="text-foreground font-clash text-3xl font-semibold tracking-tight sm:text-4xl">
                 Cardápio do RU
               </h1>
-              <p className="text-muted-foreground text-sm sm:text-sm">
+              <p className="text-muted-foreground text-sm">
                 Restaurante Universitário • {currentCampusInfo.name}
                 {currentCampusInfo.units &&
                   ` (${currentCampusInfo.units.join(', ')})`}
               </p>
             </div>
 
-            {isFetching && !isLoading && (
-              <div className="text-muted-foreground flex animate-pulse items-center gap-1.5 text-xs">
-                <ArrowsClockwiseIcon
+            <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
+              {isFetching && !isLoading && (
+                <div className="text-muted-foreground flex animate-pulse items-center gap-1.5 text-xs">
+                  <ArrowsClockwiseIcon
+                    weight="bold"
+                    className="size-3.5 animate-spin"
+                  />
+                  <span className="hidden sm:inline">
+                    Atualizando cardápio...
+                  </span>
+                </div>
+              )}
+
+              <a
+                href="https://si3.ufc.br/public/jsp/restaurante_universitario/consulta_comensal_ru.jsf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group bg-accent/60 hover:bg-accent border-border/80 hover:border-border text-foreground flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-xs backdrop-blur-md transition-all active:scale-95 sm:text-sm"
+                title="Recarregar cartão do RU (SI3)"
+                aria-label="Recarregar cartão do RU"
+              >
+                <CreditCardIcon
                   weight="bold"
-                  className="size-3.5 animate-spin"
+                  className="text-primary size-4 shrink-0 transition-transform group-hover:scale-110"
                 />
-                <span>Atualizando cardápio...</span>
-              </div>
-            )}
+                <span className="hidden font-medium sm:inline-block">
+                  Recarga
+                </span>
+                <span className="inline-block sm:hidden">+</span>
+              </a>
+            </div>
           </div>
 
           <DayNavigator

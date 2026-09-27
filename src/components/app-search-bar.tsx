@@ -1,6 +1,10 @@
 'use client'
 
-import { FunnelSimpleIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react'
+import {
+  FunnelSimpleIcon,
+  MagnifyingGlassIcon,
+  XIcon,
+} from '@phosphor-icons/react'
 import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Glow } from './glow'

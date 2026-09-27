@@ -27,7 +27,7 @@ export function MealEmptyState({
   return (
     <div
       className={cn(
-        'bg-card/40 border-border/60 flex flex-col items-center justify-center rounded-2xl border text-center shadow-xs backdrop-blur-sm',
+        'flex flex-col items-center justify-center text-center',
         isNoMeal ? 'p-12' : 'p-10',
         className,
       )}

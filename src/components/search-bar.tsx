@@ -1,9 +1,9 @@
 'use client'
 
 import {
-    BroomIcon,
-    FunnelSimpleIcon,
-    MagnifyingGlassIcon,
+  BroomIcon,
+  FunnelSimpleIcon,
+  MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
 import { useState, type ReactNode } from 'react'
 
