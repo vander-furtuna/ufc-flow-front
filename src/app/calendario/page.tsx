@@ -6,7 +6,14 @@ import Link from 'next/link'
 import { ListView } from './components/list-view'
 import { useState } from 'react'
 import { CalendarView } from './components/calendar-view'
-import { Calendar, CircleAlert, List, Search, X } from 'lucide-react'
+import {
+  Calendar,
+  CircleAlert,
+  List,
+  Search,
+  UtensilsCrossed,
+  X,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Glow } from '@/components/glow'
 import { COLORS } from '@/data/colors'
@@ -64,7 +71,20 @@ export default function AcademicCalendarPage() {
           <CalendarView />
         )}
         {view === 'list' && (
-          <div className="fixed bottom-8 left-0 z-50 flex w-full justify-center gap-1 px-4">
+          <div className="fixed bottom-8 left-0 z-50 flex w-full justify-center gap-1.5 px-4">
+            <Link
+              className="border-border bg-accent/70 hover:bg-accent flex w-fit shrink-0 items-center justify-center overflow-hidden rounded-full border shadow-lg backdrop-blur-md transition-all active:scale-95"
+              href="/restaurante"
+              title="Cardápio do RU"
+            >
+              <button
+                type="button"
+                className="text-foreground/90 relative flex size-12 shrink-0 items-center justify-center transition-all"
+                aria-label="Cardápio do Restaurante Universitário"
+              >
+                <UtensilsCrossed className="size-5" />
+              </button>
+            </Link>
             <div className="border-border bg-accent/70 relative flex h-12 w-full max-w-96 items-center justify-center gap-2 overflow-hidden rounded-full border px-3 shadow-lg backdrop-blur-md transition-all">
               <Search className="text-muted-foreground size-6 shrink-0" />
 
