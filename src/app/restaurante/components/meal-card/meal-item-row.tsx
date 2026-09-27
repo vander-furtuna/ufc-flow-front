@@ -11,7 +11,7 @@ export function MealItemRow({ item, variant = 'hero' }: MealItemRowProps) {
           {item.name}
         </span>
 
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1 empty:hidden">
           {item.hasGluten && <DietaryBadge type="gluten" />}
           {item.hasLactose && <DietaryBadge type="lactose" />}
         </div>
@@ -25,7 +25,7 @@ export function MealItemRow({ item, variant = 'hero' }: MealItemRowProps) {
         {item.name}
       </span>
 
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1 empty:hidden">
         {item.hasGluten && <DietaryBadge type="gluten" compact />}
         {item.hasLactose && <DietaryBadge type="lactose" compact />}
       </div>
