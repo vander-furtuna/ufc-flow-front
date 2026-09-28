@@ -97,7 +97,7 @@ export function DietaryBadge({
   if (!Icon) return null
 
   const title = titleProp ?? resolvedItem?.title
-  const label = labelProp ?? resolvedItem?.label
+  const label = _compact ? undefined : (labelProp ?? resolvedItem?.label)
   const color = colorProp ?? resolvedItem?.color
 
   return (
