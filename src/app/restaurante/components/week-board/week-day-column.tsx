@@ -96,12 +96,12 @@ function MealBlock({
             return (
               <div
                 key={cat.category}
-                className="bg-accent/40 border-border/60 relative overflow-hidden rounded-xl border p-2.5 shadow-2xs"
+                className="bg-accent/40 border-border/60 relative overflow-hidden rounded-xl border p-2 shadow-2xs"
               >
                 {meta.glowColor && (
                   <Glow
                     colors={meta.glowColor}
-                    className="pointer-events-none absolute -top-3 -right-3 size-14 opacity-25 blur-lg"
+                    className="pointer-events-none absolute -top-3 -left-3 size-14 opacity-25 blur-lg"
                   />
                 )}
                 <div className="mb-1.5 flex items-center gap-1.5">
@@ -115,11 +115,11 @@ function MealBlock({
                   </span>
                 </div>
 
-                <ul className="flex flex-col gap-1.5">
+                <ul className="flex flex-col gap-1">
                   {cat.items.map((item) => (
                     <li
                       key={item.id}
-                      className="bg-background/60 border-border/40 flex items-start justify-between gap-1.5 rounded-lg border p-1.5 text-xs font-medium"
+                      className="bg-background/60 border-border/40 flex items-center justify-between gap-1.5 rounded-md border p-1.5 text-xs font-medium"
                     >
                       <span className="text-foreground leading-snug">
                         {item.name}
@@ -143,7 +143,7 @@ function MealBlock({
 
       {/* Outras Categorias (Guarnição, Acompanhamentos, Salada, Sobremesa, etc.) */}
       {otherCategories.length > 0 && (
-        <div className="bg-background/40 border-border/50 flex flex-col gap-2 rounded-xl border p-2.5">
+        <div className="bg-background/40 border-border/50 flex flex-col gap-2 rounded-md border p-2.5">
           {otherCategories.map((cat: MealCategory, idx) => (
             <div
               key={cat.category}
@@ -199,7 +199,7 @@ export function WeekDayColumn({
   return (
     <div
       className={cn(
-        'bg-card/75 border-border/80 flex h-full w-full min-w-[280px] shrink-0 flex-col rounded-2xl border p-3.5 shadow-xs backdrop-blur-md transition-all sm:min-w-[300px] lg:min-w-0',
+        'bg-card/75 border-border/80 flex h-full w-full min-w-70 shrink-0 flex-col rounded-2xl border p-2.5 shadow-xs backdrop-blur-md transition-all sm:min-w-75 lg:min-w-0',
         isToday && 'border-primary/50 ring-primary/20 shadow-md ring-2',
       )}
     >

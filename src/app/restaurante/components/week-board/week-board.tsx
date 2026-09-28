@@ -2,6 +2,7 @@
 
 import { useHorizontalScrollWithOverlay } from '@/hooks/use-horizontal-scroll-with-overlay'
 import { cn } from '@/lib/utils'
+import { getFortalezaTodayDate } from '@/lib/ru-scraper'
 import { WeekDayColumn } from './week-day-column'
 import type { RUMenuWeek, WeekMealFilter } from '@/types/ru'
 
@@ -24,7 +25,7 @@ export function WeekBoard({
   glutenFree = false,
   lactoseFree = false,
   onSelectDay,
-  todayDate = new Date().toISOString().split('T')[0],
+  todayDate = getFortalezaTodayDate(),
 }: WeekBoardProps) {
   const { scrollRef, showLeftShadow, showRightShadow } =
     useHorizontalScrollWithOverlay<HTMLDivElement>()

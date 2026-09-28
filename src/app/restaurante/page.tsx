@@ -16,7 +16,7 @@ import { WeekMealTabs } from './components/week-meal-tabs'
 import { WeekBoard, WeekSkeleton } from './components/week-board'
 import { useRuMenu } from '@/hooks/use-ru-menu'
 import { useRuMenuWeek } from '@/hooks/use-ru-menu-week'
-import { getMondayOfWeek } from '@/lib/ru-scraper'
+import { getFortalezaTodayDate, getMondayOfWeek } from '@/lib/ru-scraper'
 import {
   UFC_CAMPUSES,
   type CampusId,
@@ -239,8 +239,10 @@ export default function RestaurantePage() {
     [selectedCampusId],
   )
 
-  const isToday =
-    !selectedDate || selectedDate === new Date().toISOString().split('T')[0]
+  const today = getFortalezaTodayDate()
+  const isToday = !selectedDate
+    ? !dayData?.date || dayData.date === today
+    : selectedDate === today
 
   const currentMonday = useMemo(() => getMondayOfWeek(), [])
   const isCurrentWeek = useMemo(() => {
@@ -352,9 +354,7 @@ export default function RestaurantePage() {
           {viewMode === 'day' ? (
             <DayNavigator
               currentDate={
-                dayData?.date ||
-                selectedDate ||
-                new Date().toISOString().split('T')[0]
+                dayData?.date || selectedDate || getFortalezaTodayDate()
               }
               currentLabel={dayData?.currentLabel}
               prevDate={dayData?.prevDate || null}

@@ -22,6 +22,19 @@ const WEEKDAY_NAMES = [
   'Sábado',
 ]
 
+/**
+ * Retorna a data atual no formato YYYY-MM-DD no fuso oficial de Fortaleza/UFC (America/Fortaleza, UTC-3)
+ */
+export function getFortalezaTodayDate(): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Fortaleza',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  return formatter.format(new Date())
+}
+
 export function formatDateLabel(dateStr: string): string {
   const [y, m, d] = dateStr.split('-').map(Number)
   const dt = new Date(y, m - 1, d, 12, 0, 0)
@@ -53,7 +66,9 @@ export function getWeekDaysRange(referenceDate?: string): WeekDaysRange {
   let target: Date
 
   if (!referenceDate) {
-    target = new Date()
+    const todayStr = getFortalezaTodayDate()
+    const [y, m, d] = todayStr.split('-').map(Number)
+    target = new Date(y, m - 1, d, 12, 0, 0)
     const day = target.getDay()
     // No fim de semana (sábado ou domingo), direciona para a próxima segunda-feira útil
     if (day === 0) {
@@ -274,8 +289,31 @@ export async function scrapeRUMenuDay(
       !meals.almoco?.categories.length &&
       !meals.jantar?.categories.length)
 
-  // Data efetiva
-  const resolvedDate = dateParam || new Date().toISOString().split('T')[0]
+  // Data efetiva:
+  // Se dateParam foi passado, confia nele.
+  // Senão, extrai a data real da tabela no HTML retornado pelo portal da UFC (ex: "Domingo (27/09)").
+  let resolvedDate: string
+  if (dateParam) {
+    resolvedDate = dateParam
+  } else {
+    const match = rawCurrentLabel.match(/(\d{1,2})\/(\d{1,2})/)
+    if (match) {
+      const dd = match[1].padStart(2, '0')
+      const mm = match[2].padStart(2, '0')
+      const year =
+        prevDate?.slice(0, 4) ||
+        nextDate?.slice(0, 4) ||
+        getFortalezaTodayDate().slice(0, 4)
+      resolvedDate = `${year}-${mm}-${dd}`
+    } else {
+      resolvedDate = getFortalezaTodayDate()
+    }
+  }
+
+  // Previne loop na navegação caso o portal retorne nextDate ou prevDate igual à data resolvida
+  const safeNextDate = nextDate && nextDate !== resolvedDate ? nextDate : null
+  const safePrevDate = prevDate && prevDate !== resolvedDate ? prevDate : null
+
   const currentLabel =
     rawCurrentLabel || formatDateLabel(resolvedDate) || 'Cardápio'
 
@@ -285,10 +323,10 @@ export async function scrapeRUMenuDay(
     campusName: campusTitle,
     date: resolvedDate,
     currentLabel,
-    prevDate,
-    prevLabel,
-    nextDate,
-    nextLabel,
+    prevDate: safePrevDate,
+    prevLabel: safePrevDate ? prevLabel : null,
+    nextDate: safeNextDate,
+    nextLabel: safeNextDate ? nextLabel : null,
     isClosedOrEmpty,
     emptyMessage: emptyNoticeMessage,
     meals,
