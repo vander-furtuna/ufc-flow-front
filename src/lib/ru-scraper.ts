@@ -40,6 +40,10 @@ export interface WeekDaysRange {
   label: string
 }
 
+export function getMondayOfWeek(referenceDate?: string): string {
+  return getWeekDaysRange(referenceDate).monday
+}
+
 /**
  * Calcula os dias úteis (Segunda a Sexta) de uma semana de referência.
  * Se nenhuma data for informada no final de semana (sábado/domingo),
