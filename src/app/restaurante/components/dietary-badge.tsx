@@ -4,8 +4,11 @@ import {
   useState,
   useRef,
   useEffect,
+  useCallback,
   type ComponentType,
   type HTMLAttributes,
+  type MouseEvent,
+  type PointerEvent,
 } from 'react'
 import {
   DropIcon,
@@ -13,13 +16,9 @@ import {
   LeafIcon,
   type IconProps,
 } from '@phosphor-icons/react'
+import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { Glow } from '@/components/glow'
 import { cn } from '@/lib/utils'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 
 export type DietaryType = 'gluten' | 'lactose' | 'vegetarian'
 
@@ -105,6 +104,8 @@ export function DietaryBadge({
   ...props
 }: DietaryBadgeProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const isPinnedRef = useRef(false)
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const resolvedItem = itemProp ?? (type ? DIETARY_ITEMS_MAP[type] : undefined)
@@ -114,30 +115,63 @@ export function DietaryBadge({
   const label = labelProp ?? resolvedItem?.label
   const color = colorProp ?? resolvedItem?.color
 
-  // Fecha o tooltip quando o usuário clica fora ou pressiona Escape
+  // Limpa o timer de hover ao desmontar
   useEffect(() => {
-    if (!isOpen) return
-
-    const handlePointerDown = (e: PointerEvent) => {
-      if (
-        triggerRef.current &&
-        !triggerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false)
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
       }
     }
+  }, [])
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false)
+  const handlePointerEnter = (e: PointerEvent<HTMLButtonElement>) => {
+    if (e.pointerType === 'touch') return
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsOpen(true)
+    }, 120)
+  }
+
+  const handlePointerLeave = (e: PointerEvent<HTMLButtonElement>) => {
+    if (e.pointerType === 'touch') return
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
+    }
+    // Não fecha se o tooltip foi fixado via clique
+    if (!isPinnedRef.current) {
+      setIsOpen(false)
+    }
+  }
+
+  const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
     }
 
-    window.addEventListener('pointerdown', handlePointerDown)
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('pointerdown', handlePointerDown)
-      window.removeEventListener('keydown', handleKeyDown)
+    if (isPinnedRef.current) {
+      // Já estava fixado pelo clique -> desativa e fecha
+      isPinnedRef.current = false
+      setIsOpen(false)
+    } else {
+      // Primeiro clique (mesmo se o hover já tivesse aberto!) -> fixa e mantém aberto
+      isPinnedRef.current = true
+      setIsOpen(true)
     }
-  }, [isOpen])
+  }
+
+  const handleOpenChange = useCallback((open: boolean) => {
+    if (!open) {
+      isPinnedRef.current = false
+      setIsOpen(false)
+    } else {
+      setIsOpen(true)
+    }
+  }, [])
 
   if (!Icon) return null
 
@@ -146,18 +180,14 @@ export function DietaryBadge({
   // Quando compact: exibe apenas o ícone e surge o tooltip ao clicar (ou passar o mouse)
   if (compact) {
     return (
-      <Tooltip open={isOpen} onOpenChange={setIsOpen}>
-        <TooltipTrigger asChild>
+      <PopoverPrimitive.Root open={isOpen} onOpenChange={handleOpenChange}>
+        <PopoverPrimitive.Trigger asChild>
           <button
             ref={triggerRef}
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsOpen((prev) => !prev)
-            }}
-            onPointerDown={(e) => {
-              e.stopPropagation()
-            }}
+            onClick={handleClick}
+            onPointerEnter={handlePointerEnter}
+            onPointerLeave={handlePointerLeave}
             aria-label={tooltipText}
             className={cn(
               'bg-accent border-border text-foreground/90 hover:bg-accent/90 hover:border-foreground/30 relative inline-flex cursor-pointer items-center justify-center overflow-hidden rounded-md border p-1 text-[11px] font-medium shadow-2xs transition-all select-none active:scale-90',
@@ -176,22 +206,35 @@ export function DietaryBadge({
               className="text-foreground/90 relative z-10 size-3.5 shrink-0"
             />
           </button>
-        </TooltipTrigger>
-        <TooltipContent
-          side="top"
-          align="center"
-          sideOffset={6}
-          className="bg-popover/95 border-border/80 text-foreground flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-md backdrop-blur-md"
-        >
-          {color && (
-            <span
-              className="size-1.5 shrink-0 rounded-full"
-              style={{ backgroundColor: color }}
-            />
-          )}
-          <span>{tooltipText}</span>
-        </TooltipContent>
-      </Tooltip>
+        </PopoverPrimitive.Trigger>
+
+        <PopoverPrimitive.Portal>
+          <PopoverPrimitive.Content
+            side="top"
+            align="center"
+            sideOffset={6}
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            onPointerDownOutside={(e) => {
+              if (triggerRef.current?.contains(e.target as Node)) {
+                e.preventDefault()
+              }
+            }}
+            className={cn(
+              'bg-popover/95 border-border/80 text-foreground pointer-events-none z-900 flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-md backdrop-blur-md select-none',
+              'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1',
+            )}
+          >
+            {color && (
+              <span
+                className="size-1.5 shrink-0 rounded-full"
+                style={{ backgroundColor: color }}
+              />
+            )}
+            <span>{tooltipText}</span>
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
     )
   }
 
