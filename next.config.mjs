@@ -2,7 +2,7 @@
 const nextConfig = {
   output: 'standalone',
   reactCompiler: true,
-  allowedDevOrigins: ['192.168.101.*'],
+  allowedDevOrigins: ['192.168.18.*'],
   experimental: {
     optimizePackageImports: ['@phosphor-icons/react'],
   },

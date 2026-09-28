@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { Logo } from '@/components/logo'
 import { ModeToggle } from '@/components/theme-toggle'
@@ -46,38 +46,86 @@ function getDefaultMealType(): MealType {
   return 'jantar'
 }
 
-export default function RestaurantePage() {
-  const [selectedCampusId, setSelectedCampusId] = useState<CampusId>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('ufc_flow_ru_campus')
-        if (saved) {
-          const id = Number(saved) as CampusId
-          if (UFC_CAMPUSES.some((c) => c.id === id)) {
-            return id
-          }
-        }
-      } catch {
-        // Ignora erro se localStorage inacessível
-      }
-    }
-    return 4 // Sobral como padrão inicial
-  })
+// Mecanismo de subscrição reativa para localStorage com compatibilidade SSR pura
+const storageListeners = new Set<() => void>()
 
-  // Modo de visualização: 'day' (Dia) ou 'week' (Semana)
-  const [viewMode, setViewMode] = useState<RUViewMode>(() => {
+function emitStorageChange() {
+  for (const listener of storageListeners) {
+    listener()
+  }
+}
+
+function subscribeToStorage(callback: () => void) {
+  storageListeners.add(callback)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('storage', callback)
+  }
+  return () => {
+    storageListeners.delete(callback)
     if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('ufc_flow_ru_view_mode')
-        if (saved === 'day' || saved === 'week') {
-          return saved
-        }
-      } catch {
-        // Ignora erro
+      window.removeEventListener('storage', callback)
+    }
+  }
+}
+
+function getSavedCampus(): CampusId {
+  if (typeof window === 'undefined') return 4
+  try {
+    const saved = localStorage.getItem('ufc_flow_ru_campus')
+    if (saved) {
+      const id = Number(saved) as CampusId
+      if (UFC_CAMPUSES.some((c) => c.id === id)) {
+        return id
       }
     }
-    return 'day'
-  })
+  } catch {
+    // Ignora erro se localStorage inacessível
+  }
+  return 4
+}
+
+function getServerCampus(): CampusId {
+  return 4
+}
+
+function getSavedViewMode(): RUViewMode {
+  if (typeof window === 'undefined') return 'day'
+  try {
+    const saved = localStorage.getItem('ufc_flow_ru_view_mode')
+    if (saved === 'day' || saved === 'week') {
+      return saved
+    }
+  } catch {
+    // Ignora erro
+  }
+  return 'day'
+}
+
+function getServerViewMode(): RUViewMode {
+  return 'day'
+}
+
+export default function RestaurantePage() {
+  // Sincronização segura de campus e modo de visualização com useSyncExternalStore
+  // No SSR e na hidratação inicial, o React usa getServerSnapshot (valores determinísticos),
+  // eliminando qualquer possibilidade de erro de hidratação.
+  const selectedCampusId = useSyncExternalStore(
+    subscribeToStorage,
+    getSavedCampus,
+    getServerCampus,
+  )
+
+  const viewMode = useSyncExternalStore(
+    subscribeToStorage,
+    getSavedViewMode,
+    getServerViewMode,
+  )
+
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
 
   // Estados da visão de Dia
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
@@ -112,21 +160,21 @@ export default function RestaurantePage() {
     else if (type === 'lactose') setLactoseFree((v) => !v)
   }
 
-  // Persiste campus selecionado
+  // Persiste campus selecionado e emite atualização
   const handleSelectCampus = (id: CampusId) => {
-    setSelectedCampusId(id)
     try {
       localStorage.setItem('ufc_flow_ru_campus', String(id))
+      emitStorageChange()
     } catch {
       // Ignora erro
     }
   }
 
-  // Persiste modo de visualização
+  // Persiste modo de visualização e emite atualização
   const handleSelectViewMode = (mode: RUViewMode) => {
-    setViewMode(mode)
     try {
       localStorage.setItem('ufc_flow_ru_view_mode', mode)
+      emitStorageChange()
     } catch {
       // Ignora erro
     }
@@ -135,7 +183,7 @@ export default function RestaurantePage() {
   // Transição rápida de uma coluna da semana para o dia detalhado
   const handleSelectDayFromWeek = (date: string) => {
     setSelectedDate(date)
-    setViewMode('day')
+    handleSelectViewMode('day')
   }
 
   // Hook de busca do cardápio diário via TanStack Query e IndexedDB
@@ -169,19 +217,21 @@ export default function RestaurantePage() {
   const activeMeal: MealType = useMemo(() => {
     if (userSelectedMeal) return userSelectedMeal
 
-    const defaultMeal = getDefaultMealType()
-    if (!dayData?.meals || dayData.isClosedOrEmpty) return defaultMeal
+    if (dayData?.meals && !dayData.isClosedOrEmpty) {
+      const defaultMeal = isClient ? getDefaultMealType() : 'almoco'
+      const currentMealData = dayData.meals[defaultMeal]
+      if (currentMealData && !currentMealData.isEmpty) return defaultMeal
 
-    const currentMealData = dayData.meals[defaultMeal]
-    if (currentMealData && !currentMealData.isEmpty) return defaultMeal
+      if (dayData.meals.almoco && !dayData.meals.almoco.isEmpty) return 'almoco'
+      if (dayData.meals.jantar && !dayData.meals.jantar.isEmpty) return 'jantar'
+      if (dayData.meals.desjejum && !dayData.meals.desjejum.isEmpty)
+        return 'desjejum'
 
-    if (dayData.meals.almoco && !dayData.meals.almoco.isEmpty) return 'almoco'
-    if (dayData.meals.jantar && !dayData.meals.jantar.isEmpty) return 'jantar'
-    if (dayData.meals.desjejum && !dayData.meals.desjejum.isEmpty)
-      return 'desjejum'
+      return defaultMeal
+    }
 
-    return defaultMeal
-  }, [userSelectedMeal, dayData])
+    return isClient ? getDefaultMealType() : 'almoco'
+  }, [userSelectedMeal, dayData, isClient])
 
   const currentCampusInfo = useMemo(
     () =>
@@ -233,18 +283,18 @@ export default function RestaurantePage() {
         {/* Header do UFC Flow */}
         <header className="flex h-16 w-full shrink-0 items-center justify-between">
           <Link href="/" aria-label="Retornar para o início">
-            <Logo className="h-10 sm:h-12" />
+            <Logo className="h-10 sm:h-12" isResponsive />
           </Link>
 
           <div className="flex items-center gap-2">
-            <ViewModeToggle
-              viewMode={viewMode}
-              onChangeViewMode={handleSelectViewMode}
-              disabled={isLoading || isFetching}
-            />
             <CampusSelector
               selectedCampusId={selectedCampusId}
               onSelectCampus={handleSelectCampus}
+              disabled={isLoading || isFetching}
+            />
+            <ViewModeToggle
+              viewMode={viewMode}
+              onChangeViewMode={handleSelectViewMode}
               disabled={isLoading || isFetching}
             />
             <ModeToggle />
