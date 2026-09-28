@@ -33,28 +33,36 @@ export function DayNavigator({
   isToday,
   isLoading = false,
 }: DayNavigatorProps) {
-  // Se não houver prevDate da API, calcula um dia antes (pulando domingo se necessário)
+  // Se não houver prevDate da API (ou for igual à data atual), calcula um dia antes (pulando fins de semana)
   const fallbackPrev = () => {
-    if (prevDate) {
+    if (prevDate && prevDate !== currentDate) {
       onNavigate(prevDate)
       return
     }
     const d = new Date(currentDate + 'T12:00:00')
     d.setDate(d.getDate() - 1)
-    if (d.getDay() === 0) d.setDate(d.getDate() - 2) // se domingo, vai pra sexta
-    onNavigate(d.toISOString().split('T')[0])
+    if (d.getDay() === 0) d.setDate(d.getDate() - 2) // se domingo, volta para sexta
+    if (d.getDay() === 6) d.setDate(d.getDate() - 1) // se sábado, volta para sexta
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    onNavigate(`${yyyy}-${mm}-${dd}`)
   }
 
-  // Se não houver nextDate da API, calcula um dia depois
+  // Se não houver nextDate da API (ou for igual à data atual), calcula um dia depois (pulando fins de semana)
   const fallbackNext = () => {
-    if (nextDate) {
+    if (nextDate && nextDate !== currentDate) {
       onNavigate(nextDate)
       return
     }
     const d = new Date(currentDate + 'T12:00:00')
     d.setDate(d.getDate() + 1)
-    if (d.getDay() === 0) d.setDate(d.getDate() + 1) // se domingo, vai pra segunda
-    onNavigate(d.toISOString().split('T')[0])
+    if (d.getDay() === 6) d.setDate(d.getDate() + 2) // se sábado, pula para segunda
+    if (d.getDay() === 0) d.setDate(d.getDate() + 1) // se domingo, pula para segunda
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    onNavigate(`${yyyy}-${mm}-${dd}`)
   }
 
   // Formatação amigável se o currentLabel não vier
@@ -132,14 +140,20 @@ export function DayNavigator({
         type="button"
         onClick={fallbackNext}
         disabled={isLoading}
-        title={nextLabel ? `Próximo dia: ${nextLabel}` : 'Próximo dia'}
+        title={
+          nextLabel && nextDate !== currentDate
+            ? `Próximo dia: ${nextLabel}`
+            : 'Próximo dia'
+        }
         className={cn(
           'text-foreground hover:bg-accent/80 flex items-center gap-1 rounded-xl p-2 text-xs font-medium transition-all active:scale-95 sm:px-3 sm:py-2',
           isLoading && 'cursor-not-allowed opacity-50',
         )}
       >
         <span className="hidden max-w-[110px] truncate sm:inline">
-          {nextLabel || 'Próximo'}
+          {nextDate && nextDate !== currentDate
+            ? nextLabel || 'Próximo'
+            : 'Próximo'}
         </span>
         <CaretRightIcon weight="bold" className="size-4 shrink-0" />
       </button>

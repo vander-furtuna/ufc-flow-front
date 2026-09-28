@@ -41,7 +41,7 @@ export function CampusSelector({
             weight="bold"
             className="text-primary size-4 shrink-0 transition-transform group-hover:scale-110"
           />
-          <span className="max-w-[130px] truncate font-medium tracking-tight sm:max-w-none">
+          <span className="hidden max-w-32.5 truncate font-medium tracking-tight sm:inline-block sm:max-w-none">
             {currentCampus.name}
           </span>
           <CaretDownIcon

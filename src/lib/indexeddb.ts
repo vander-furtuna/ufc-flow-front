@@ -11,7 +11,7 @@ import type { Schedule } from '@/types/schedule'
 import type { MonthGroup } from '@/types/calendar'
 import { getCalendarService } from '@/services/scrapping/get-calendar-service'
 import { normalizeWords } from '@/utils/normalize-words'
-import type { RUMenuDay } from '@/types/ru'
+import type { RUMenuDay, RUMenuWeek } from '@/types/ru'
 
 // Configuração do banco
 const DB_NAME = 'UFCFlowDB'
@@ -339,6 +339,42 @@ class IndexedDBStorage {
     const record = await this.db.get(STORE_RU, key)
     return (record as RUMenuDay) || null
   }
+
+  async saveRuMenuWeek(week: RUMenuWeek): Promise<void> {
+    await this.init()
+    if (!this.db) throw new Error('Database not initialized')
+
+    const now = new Date().toISOString()
+    const tx = this.db.transaction(STORE_RU, 'readwrite')
+
+    // Salva o resumo da semana
+    await tx.store.put({
+      ...week,
+      updatedAt: now,
+    })
+
+    // Salva também cada dia da semana individualmente
+    for (const day of week.days) {
+      await tx.store.put({
+        ...day,
+        updatedAt: now,
+      })
+    }
+
+    await tx.done
+  }
+
+  async getRuMenuWeek(
+    campusId: number,
+    weekStartDate: string,
+  ): Promise<RUMenuWeek | null> {
+    await this.init()
+    if (!this.db) throw new Error('Database not initialized')
+
+    const key = `${campusId}-week-${weekStartDate}`
+    const record = await this.db.get(STORE_RU, key)
+    return (record as RUMenuWeek) || null
+  }
 }
 
 // Instância singleton
@@ -347,6 +383,10 @@ const storage = new IndexedDBStorage()
 export const getRuMenu = (campusId: number, date: string) =>
   storage.getRuMenu(campusId, date)
 export const saveRuMenu = (menu: RUMenuDay) => storage.saveRuMenu(menu)
+
+export const getRuMenuWeek = (campusId: number, weekStartDate: string) =>
+  storage.getRuMenuWeek(campusId, weekStartDate)
+export const saveRuMenuWeek = (week: RUMenuWeek) => storage.saveRuMenuWeek(week)
 
 export const getSchedulesByCourse = (courseId: string) =>
   storage.getSchedulesByCourse(courseId)

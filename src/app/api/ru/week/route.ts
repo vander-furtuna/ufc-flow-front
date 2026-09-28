@@ -1,4 +1,4 @@
-import { scrapeRUMenuDay } from '@/lib/ru-scraper'
+import { scrapeRUMenuWeek } from '@/lib/ru-scraper'
 import type { CampusId } from '@/types/ru'
 
 export const dynamic = 'force-dynamic'
@@ -11,9 +11,9 @@ export async function GET(req: Request): Promise<Response> {
 
     const campusId = (Number(campusParam) || 4) as CampusId
 
-    const result = await scrapeRUMenuDay(campusId, dateParam)
+    const weekMenu = await scrapeRUMenuWeek(campusId, dateParam)
 
-    return Response.json(result, {
+    return Response.json(weekMenu, {
       headers: {
         'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
       },
@@ -21,7 +21,10 @@ export async function GET(req: Request): Promise<Response> {
   } catch (err: unknown) {
     const error = err as Error
     return Response.json(
-      { error: error?.message || 'Erro interno ao consultar cardápio do RU' },
+      {
+        error:
+          error?.message || 'Erro interno ao consultar cardápio semanal do RU',
+      },
       { status: 500 },
     )
   }

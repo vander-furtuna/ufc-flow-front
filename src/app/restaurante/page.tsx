@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { Logo } from '@/components/logo'
 import { ModeToggle } from '@/components/theme-toggle'
@@ -10,8 +10,20 @@ import { MealTabs } from './components/meal-tabs'
 import { MealCard } from './components/meal-card'
 import { RuEmptyState } from './components/ru-empty-state'
 import { RuSkeleton } from './components/ru-skeleton'
+import { ViewModeToggle } from './components/view-mode-toggle'
+import { WeekNavigator } from './components/week-navigator'
+import { WeekMealTabs } from './components/week-meal-tabs'
+import { WeekBoard, WeekSkeleton } from './components/week-board'
 import { useRuMenu } from '@/hooks/use-ru-menu'
-import { UFC_CAMPUSES, type CampusId, type MealType } from '@/types/ru'
+import { useRuMenuWeek } from '@/hooks/use-ru-menu-week'
+import { getFortalezaTodayDate, getMondayOfWeek } from '@/lib/ru-scraper'
+import {
+  UFC_CAMPUSES,
+  type CampusId,
+  type MealType,
+  type RUViewMode,
+  type WeekMealFilter,
+} from '@/types/ru'
 import {
   ArrowsClockwiseIcon,
   BroomIcon,
@@ -21,6 +33,7 @@ import {
 import { AppSearchBar } from '@/components/app-search-bar'
 import { DietaryFilters } from './components/dietary-filters'
 import type { DietaryType } from './components/dietary-badge'
+import { cn } from '@/lib/utils'
 
 function getDefaultMealType(): MealType {
   const now = new Date()
@@ -33,30 +46,102 @@ function getDefaultMealType(): MealType {
   return 'jantar'
 }
 
-export default function RestaurantePage() {
-  const [selectedCampusId, setSelectedCampusId] = useState<CampusId>(() => {
+// Mecanismo de subscrição reativa para localStorage com compatibilidade SSR pura
+const storageListeners = new Set<() => void>()
+
+function emitStorageChange() {
+  for (const listener of storageListeners) {
+    listener()
+  }
+}
+
+function subscribeToStorage(callback: () => void) {
+  storageListeners.add(callback)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('storage', callback)
+  }
+  return () => {
+    storageListeners.delete(callback)
     if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('ufc_flow_ru_campus')
-        if (saved) {
-          const id = Number(saved) as CampusId
-          if (UFC_CAMPUSES.some((c) => c.id === id)) {
-            return id
-          }
-        }
-      } catch {
-        // Ignora erro se localStorage inacessível
+      window.removeEventListener('storage', callback)
+    }
+  }
+}
+
+function getSavedCampus(): CampusId {
+  if (typeof window === 'undefined') return 4
+  try {
+    const saved = localStorage.getItem('ufc_flow_ru_campus')
+    if (saved) {
+      const id = Number(saved) as CampusId
+      if (UFC_CAMPUSES.some((c) => c.id === id)) {
+        return id
       }
     }
-    return 4 // Sobral como padrão inicial
-  })
+  } catch {
+    // Ignora erro se localStorage inacessível
+  }
+  return 4
+}
 
+function getServerCampus(): CampusId {
+  return 4
+}
+
+function getSavedViewMode(): RUViewMode {
+  if (typeof window === 'undefined') return 'day'
+  try {
+    const saved = localStorage.getItem('ufc_flow_ru_view_mode')
+    if (saved === 'day' || saved === 'week') {
+      return saved
+    }
+  } catch {
+    // Ignora erro
+  }
+  return 'day'
+}
+
+function getServerViewMode(): RUViewMode {
+  return 'day'
+}
+
+export default function RestaurantePage() {
+  // Sincronização segura de campus e modo de visualização com useSyncExternalStore
+  // No SSR e na hidratação inicial, o React usa getServerSnapshot (valores determinísticos),
+  // eliminando qualquer possibilidade de erro de hidratação.
+  const selectedCampusId = useSyncExternalStore(
+    subscribeToStorage,
+    getSavedCampus,
+    getServerCampus,
+  )
+
+  const viewMode = useSyncExternalStore(
+    subscribeToStorage,
+    getSavedViewMode,
+    getServerViewMode,
+  )
+
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
+
+  // Estados da visão de Dia
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
     undefined,
   )
   const [userSelectedMeal, setUserSelectedMeal] = useState<MealType | null>(
     null,
   )
+
+  // Estados da visão de Semana
+  const [selectedWeekDate, setSelectedWeekDate] = useState<string | undefined>(
+    undefined,
+  )
+  const [weekMealFilter, setWeekMealFilter] = useState<WeekMealFilter>('almoco')
+
+  // Filtros de busca e restrição alimentar compartilhados
   const [searchQuery, setSearchQuery] = useState('')
   const [onlyVegetarian, setOnlyVegetarian] = useState(false)
   const [glutenFree, setGlutenFree] = useState(false)
@@ -75,38 +160,78 @@ export default function RestaurantePage() {
     else if (type === 'lactose') setLactoseFree((v) => !v)
   }
 
-  // Persiste campus selecionado
+  // Persiste campus selecionado e emite atualização
   const handleSelectCampus = (id: CampusId) => {
-    setSelectedCampusId(id)
     try {
       localStorage.setItem('ufc_flow_ru_campus', String(id))
+      emitStorageChange()
     } catch {
       // Ignora erro
     }
   }
 
-  // Hook de busca do cardápio via TanStack Query e IndexedDB
-  const { data, isLoading, isError, error, refetch, isFetching } = useRuMenu({
+  // Persiste modo de visualização e emite atualização
+  const handleSelectViewMode = (mode: RUViewMode) => {
+    try {
+      localStorage.setItem('ufc_flow_ru_view_mode', mode)
+      emitStorageChange()
+    } catch {
+      // Ignora erro
+    }
+  }
+
+  // Transição rápida de uma coluna da semana para o dia detalhado
+  const handleSelectDayFromWeek = (date: string) => {
+    setSelectedDate(date)
+    handleSelectViewMode('day')
+  }
+
+  // Hook de busca do cardápio diário via TanStack Query e IndexedDB
+  const {
+    data: dayData,
+    isLoading: isDayLoading,
+    isError: isDayError,
+    error: dayError,
+    refetch: refetchDay,
+    isFetching: isDayFetching,
+  } = useRuMenu({
     campusId: selectedCampusId,
     date: selectedDate,
   })
 
-  // Refeição ativa calculada de forma pura e reativa (sem setState em effect)
+  // Hook de busca do cardápio semanal via TanStack Query e IndexedDB
+  const {
+    data: weekData,
+    isLoading: isWeekLoading,
+    isError: isWeekError,
+    error: weekError,
+    refetch: refetchWeek,
+    isFetching: isWeekFetching,
+  } = useRuMenuWeek({
+    campusId: selectedCampusId,
+    date: selectedWeekDate || selectedDate,
+    enabled: viewMode === 'week',
+  })
+
+  // Refeição ativa diária calculada de forma pura e reativa
   const activeMeal: MealType = useMemo(() => {
     if (userSelectedMeal) return userSelectedMeal
 
-    const defaultMeal = getDefaultMealType()
-    if (!data?.meals || data.isClosedOrEmpty) return defaultMeal
+    if (dayData?.meals && !dayData.isClosedOrEmpty) {
+      const defaultMeal = isClient ? getDefaultMealType() : 'almoco'
+      const currentMealData = dayData.meals[defaultMeal]
+      if (currentMealData && !currentMealData.isEmpty) return defaultMeal
 
-    const currentMealData = data.meals[defaultMeal]
-    if (currentMealData && !currentMealData.isEmpty) return defaultMeal
+      if (dayData.meals.almoco && !dayData.meals.almoco.isEmpty) return 'almoco'
+      if (dayData.meals.jantar && !dayData.meals.jantar.isEmpty) return 'jantar'
+      if (dayData.meals.desjejum && !dayData.meals.desjejum.isEmpty)
+        return 'desjejum'
 
-    if (data.meals.almoco && !data.meals.almoco.isEmpty) return 'almoco'
-    if (data.meals.jantar && !data.meals.jantar.isEmpty) return 'jantar'
-    if (data.meals.desjejum && !data.meals.desjejum.isEmpty) return 'desjejum'
+      return defaultMeal
+    }
 
-    return defaultMeal
-  }, [userSelectedMeal, data])
+    return isClient ? getDefaultMealType() : 'almoco'
+  }, [userSelectedMeal, dayData, isClient])
 
   const currentCampusInfo = useMemo(
     () =>
@@ -114,18 +239,53 @@ export default function RestaurantePage() {
     [selectedCampusId],
   )
 
-  const isToday =
-    !selectedDate || selectedDate === new Date().toISOString().split('T')[0]
+  const today = getFortalezaTodayDate()
+  const isToday = !selectedDate
+    ? !dayData?.date || dayData.date === today
+    : selectedDate === today
 
-  const activeMealData = data?.meals ? data.meals[activeMeal] : null
+  const currentMonday = useMemo(() => getMondayOfWeek(), [])
+  const isCurrentWeek = useMemo(() => {
+    if (!selectedWeekDate) return true
+    return getMondayOfWeek(selectedWeekDate) === currentMonday
+  }, [selectedWeekDate, currentMonday])
+
+  const isFetching = viewMode === 'week' ? isWeekFetching : isDayFetching
+  const isLoading = viewMode === 'week' ? isWeekLoading : isDayLoading
+
+  const activeMealData = dayData?.meals ? dayData.meals[activeMeal] : null
+
+  // Verifica disponibilidade de refeições na semana para habilitar as abas
+  const weekHasDesjejum = useMemo(() => {
+    return Boolean(
+      weekData?.days.some((d) => d.meals.desjejum && !d.meals.desjejum.isEmpty),
+    )
+  }, [weekData])
+
+  const weekHasAlmoco = useMemo(() => {
+    return Boolean(
+      weekData?.days.some((d) => d.meals.almoco && !d.meals.almoco.isEmpty),
+    )
+  }, [weekData])
+
+  const weekHasJantar = useMemo(() => {
+    return Boolean(
+      weekData?.days.some((d) => d.meals.jantar && !d.meals.jantar.isEmpty),
+    )
+  }, [weekData])
 
   return (
     <div className="flex min-h-dvh w-full justify-center px-3 pt-4 pb-28 sm:px-6 sm:pt-6">
-      <div className="flex w-full max-w-5xl flex-col gap-6">
+      <div
+        className={cn(
+          'flex w-full flex-col gap-6 transition-all duration-300',
+          viewMode === 'week' ? 'max-w-7xl' : 'max-w-5xl',
+        )}
+      >
         {/* Header do UFC Flow */}
         <header className="flex h-16 w-full shrink-0 items-center justify-between">
           <Link href="/" aria-label="Retornar para o início">
-            <Logo className="h-10 sm:h-12" />
+            <Logo className="h-10 sm:h-12" isResponsive />
           </Link>
 
           <div className="flex items-center gap-2">
@@ -134,11 +294,16 @@ export default function RestaurantePage() {
               onSelectCampus={handleSelectCampus}
               disabled={isLoading || isFetching}
             />
+            <ViewModeToggle
+              viewMode={viewMode}
+              onChangeViewMode={handleSelectViewMode}
+              disabled={isLoading || isFetching}
+            />
             <ModeToggle />
           </div>
         </header>
 
-        {/* Título & Navegador de Datas */}
+        {/* Título & Navegador de Datas/Semanas */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3 sm:gap-4">
             <div>
@@ -185,88 +350,154 @@ export default function RestaurantePage() {
             </div>
           </div>
 
-          <DayNavigator
-            currentDate={
-              data?.date ||
-              selectedDate ||
-              new Date().toISOString().split('T')[0]
-            }
-            currentLabel={data?.currentLabel}
-            prevDate={data?.prevDate || null}
-            prevLabel={data?.prevLabel || null}
-            nextDate={data?.nextDate || null}
-            nextLabel={data?.nextLabel || null}
-            onNavigate={(newDate) => setSelectedDate(newDate)}
-            onResetToday={() => setSelectedDate(undefined)}
-            isToday={isToday}
-            isLoading={isLoading}
-          />
+          {/* Navegação: Dia ou Semana */}
+          {viewMode === 'day' ? (
+            <DayNavigator
+              currentDate={
+                dayData?.date || selectedDate || getFortalezaTodayDate()
+              }
+              currentLabel={dayData?.currentLabel}
+              prevDate={dayData?.prevDate || null}
+              prevLabel={dayData?.prevLabel || null}
+              nextDate={dayData?.nextDate || null}
+              nextLabel={dayData?.nextLabel || null}
+              onNavigate={(newDate) => setSelectedDate(newDate)}
+              onResetToday={() => setSelectedDate(undefined)}
+              isToday={isToday}
+              isLoading={isDayLoading}
+            />
+          ) : (
+            <WeekNavigator
+              label={weekData?.label}
+              weekStartDate={
+                weekData?.weekStartDate ||
+                (selectedWeekDate
+                  ? getMondayOfWeek(selectedWeekDate)
+                  : currentMonday)
+              }
+              prevWeekDate={weekData?.prevWeekDate || null}
+              nextWeekDate={weekData?.nextWeekDate || null}
+              onNavigate={(newDate) => setSelectedWeekDate(newDate)}
+              onResetCurrentWeek={() => setSelectedWeekDate(undefined)}
+              isCurrentWeek={isCurrentWeek}
+              isLoading={isWeekLoading}
+            />
+          )}
         </div>
 
-        {/* Abas de Refeições (Desjejum, Almoço, Jantar) e Filtros Rápidos */}
-        {!isLoading && !data?.isClosedOrEmpty && (
-          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-            <MealTabs
-              activeMeal={activeMeal}
-              onSelectMeal={(m) => setUserSelectedMeal(m)}
-              hasDesjejum={Boolean(
-                data?.meals.desjejum && !data.meals.desjejum.isEmpty,
-              )}
-              hasAlmoco={Boolean(
-                data?.meals.almoco && !data.meals.almoco.isEmpty,
-              )}
-              hasJantar={Boolean(
-                data?.meals.jantar && !data.meals.jantar.isEmpty,
-              )}
-            />
-          </div>
-        )}
+        {/* Abas de Refeições (Dia ou Semana) */}
+        {viewMode === 'day'
+          ? !isDayLoading &&
+            !dayData?.isClosedOrEmpty && (
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+                <MealTabs
+                  activeMeal={activeMeal}
+                  onSelectMeal={(m) => setUserSelectedMeal(m)}
+                  hasDesjejum={Boolean(
+                    dayData?.meals.desjejum && !dayData.meals.desjejum.isEmpty,
+                  )}
+                  hasAlmoco={Boolean(
+                    dayData?.meals.almoco && !dayData.meals.almoco.isEmpty,
+                  )}
+                  hasJantar={Boolean(
+                    dayData?.meals.jantar && !dayData.meals.jantar.isEmpty,
+                  )}
+                />
+              </div>
+            )
+          : !isWeekLoading &&
+            weekData && (
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+                <WeekMealTabs
+                  activeMealFilter={weekMealFilter}
+                  onSelectMealFilter={setWeekMealFilter}
+                  hasDesjejum={weekHasDesjejum}
+                  hasAlmoco={weekHasAlmoco}
+                  hasJantar={weekHasJantar}
+                />
+              </div>
+            )}
 
         {/* Conteúdo Principal do Cardápio */}
         <main className="h-full w-full">
-          {isLoading ? (
-            <RuSkeleton />
-          ) : isError ? (
+          {viewMode === 'day' ? (
+            isDayLoading ? (
+              <RuSkeleton />
+            ) : isDayError ? (
+              <div className="bg-destructive/10 border-destructive/30 flex flex-col items-center justify-center rounded-2xl border p-8 text-center">
+                <WarningCircleIcon
+                  weight="bold"
+                  className="text-destructive mb-2 size-8"
+                />
+                <h3 className="text-foreground text-base font-semibold">
+                  Falha ao carregar o cardápio do dia
+                </h3>
+                <p className="text-muted-foreground mt-1 max-w-md text-xs">
+                  {dayError?.message ||
+                    'O servidor da UFC pode estar temporariamente indisponível.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => refetchDay()}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 mt-4 rounded-xl px-4 py-2 text-xs font-medium transition-all"
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            ) : dayData?.isClosedOrEmpty ? (
+              <RuEmptyState
+                message={dayData.emptyMessage}
+                nextDate={dayData.nextDate}
+                nextLabel={dayData.nextLabel}
+                onNavigateNext={() =>
+                  dayData.nextDate && setSelectedDate(dayData.nextDate)
+                }
+                onResetToday={() => setSelectedDate(undefined)}
+                isToday={isToday}
+              />
+            ) : (
+              <MealCard
+                meal={activeMealData}
+                searchQuery={searchQuery}
+                onlyVegetarian={onlyVegetarian}
+                glutenFree={glutenFree}
+                lactoseFree={lactoseFree}
+              />
+            )
+          ) : isWeekLoading ? (
+            <WeekSkeleton />
+          ) : isWeekError ? (
             <div className="bg-destructive/10 border-destructive/30 flex flex-col items-center justify-center rounded-2xl border p-8 text-center">
               <WarningCircleIcon
                 weight="bold"
                 className="text-destructive mb-2 size-8"
               />
               <h3 className="text-foreground text-base font-semibold">
-                Falha ao carregar o cardápio
+                Falha ao carregar o cardápio da semana
               </h3>
               <p className="text-muted-foreground mt-1 max-w-md text-xs">
-                {error?.message ||
+                {weekError?.message ||
                   'O servidor da UFC pode estar temporariamente indisponível.'}
               </p>
               <button
                 type="button"
-                onClick={() => refetch()}
+                onClick={() => refetchWeek()}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 mt-4 rounded-xl px-4 py-2 text-xs font-medium transition-all"
               >
                 Tentar novamente
               </button>
             </div>
-          ) : data?.isClosedOrEmpty ? (
-            <RuEmptyState
-              message={data.emptyMessage}
-              nextDate={data.nextDate}
-              nextLabel={data.nextLabel}
-              onNavigateNext={() =>
-                data.nextDate && setSelectedDate(data.nextDate)
-              }
-              onResetToday={() => setSelectedDate(undefined)}
-              isToday={isToday}
-            />
-          ) : (
-            <MealCard
-              meal={activeMealData}
+          ) : weekData ? (
+            <WeekBoard
+              week={weekData}
+              activeMealFilter={weekMealFilter}
               searchQuery={searchQuery}
               onlyVegetarian={onlyVegetarian}
               glutenFree={glutenFree}
               lactoseFree={lactoseFree}
+              onSelectDay={handleSelectDayFromWeek}
             />
-          )}
+          ) : null}
         </main>
       </div>
 

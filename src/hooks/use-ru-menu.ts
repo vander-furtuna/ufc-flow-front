@@ -16,16 +16,25 @@ export function useRuMenu({ campusId, date }: UseRuMenuParams) {
       if (typeof window !== 'undefined' && date) {
         try {
           const cached = await getRuMenu(campusId, date)
-          if (cached) {
-            // Se tiver cache e não estiver online, usa cache
-            if (!navigator.onLine) {
-              return cached
-            }
-            // Se cache foi atualizado há menos de 1 hora, usa cache
-            if (cached.updatedAt) {
-              const diffMs = Date.now() - new Date(cached.updatedAt).getTime()
-              if (diffMs < 60 * 60 * 1000) {
+          if (cached && cached.date === date) {
+            // Garante que o rótulo em cache corresponda ao dia/mês solicitado (evita cache corrompido de fuso anterior)
+            const parts = date.split('-')
+            const expectedDayMonth = `${parts[2]}/${parts[1]}`
+            const isConsistent =
+              !cached.currentLabel ||
+              cached.currentLabel.includes(expectedDayMonth)
+
+            if (isConsistent) {
+              // Se tiver cache e não estiver online, usa cache
+              if (!navigator.onLine) {
                 return cached
+              }
+              // Se cache foi atualizado há menos de 1 hora, usa cache
+              if (cached.updatedAt) {
+                const diffMs = Date.now() - new Date(cached.updatedAt).getTime()
+                if (diffMs < 60 * 60 * 1000) {
+                  return cached
+                }
               }
             }
           }

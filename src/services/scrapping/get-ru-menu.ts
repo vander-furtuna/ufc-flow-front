@@ -1,4 +1,4 @@
-import type { CampusId, RUMenuDay } from '@/types/ru'
+import type { CampusId, RUMenuDay, RUMenuWeek } from '@/types/ru'
 
 export interface GetRuMenuParams {
   campusId?: CampusId
@@ -26,5 +26,36 @@ export async function getRuMenuService({
   }
 
   const data = (await response.json()) as RUMenuDay
+  return data
+}
+
+export interface GetRuMenuWeekParams {
+  campusId?: CampusId
+  date?: string // YYYY-MM-DD
+}
+
+export async function getRuMenuWeekService({
+  campusId = 4,
+  date,
+}: GetRuMenuWeekParams = {}): Promise<RUMenuWeek> {
+  const params = new URLSearchParams()
+  if (campusId) params.set('campus', String(campusId))
+  if (date) params.set('date', date)
+
+  const response = await fetch(`/api/ru/week?${params.toString()}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(
+      errorData.error || 'Falha ao carregar cardápio semanal do RU',
+    )
+  }
+
+  const data = (await response.json()) as RUMenuWeek
   return data
 }
