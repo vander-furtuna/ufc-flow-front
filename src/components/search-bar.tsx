@@ -18,7 +18,9 @@ export function SearchBar({
   const courseSlug = params?.courseSlug as string | undefined
   const curriculumSlug = params?.curriculumSlug as string | undefined
   const baseHref =
-    courseSlug && curriculumSlug ? `/${courseSlug}/${curriculumSlug}` : undefined
+    courseSlug && curriculumSlug
+      ? `/${courseSlug}/${curriculumSlug}`
+      : undefined
 
   const { isFiltersActive, queryFilter, changeQueryFilter } = useFilter()
 

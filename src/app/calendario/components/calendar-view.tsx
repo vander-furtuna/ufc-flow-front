@@ -22,7 +22,7 @@ const toUtcIsoDate = (year: number, monthIndex: number, day: number) => {
 }
 
 export function CalendarView() {
-  const { events } = useCalendar()
+  const { events, isLoading } = useCalendar()
 
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
@@ -199,7 +199,12 @@ export function CalendarView() {
         ))}
       </div>
 
-      <div className="border-border no-scrollbar grid max-h-full auto-rows-[8rem] grid-cols-7 overflow-y-auto border-l">
+      <div
+        className={cn(
+          'border-border no-scrollbar grid max-h-full auto-rows-[8rem] grid-cols-7 overflow-y-auto border-l',
+          isLoading && events.length === 0 && 'animate-pulse opacity-60',
+        )}
+      >
         {renderCalendarDays()}
       </div>
 
