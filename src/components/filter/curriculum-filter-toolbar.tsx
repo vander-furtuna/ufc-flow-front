@@ -18,14 +18,11 @@ export function CurriculumFilterToolbar() {
         <button
           type="button"
           onClick={clearAllFilters}
-          className="transition-all ease-in-out not-disabled:active:scale-90 disabled:opacity-50 cursor-pointer"
+          className="cursor-pointer transition-all ease-in-out not-disabled:active:scale-90 disabled:opacity-50"
           disabled={!isFiltersActive}
           aria-label="Limpar todos os filtros"
         >
-          <BroomIcon
-            weight="bold"
-            className="text-foreground/90 size-5"
-          />
+          <BroomIcon weight="bold" className="text-foreground/90 size-5" />
         </button>
       </div>
     </>
