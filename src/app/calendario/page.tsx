@@ -54,7 +54,7 @@ export default function AcademicCalendarPage() {
       >
         <header className="flex h-18 w-full shrink-0 items-center justify-between">
           <Link href="/" aria-label="Home">
-            <Logo className="h-12" id="tour-return" />
+            <Logo className="h-12" id="tour-return" isResponsive />
           </Link>
           <div className="flex items-center gap-2">
             <button
