@@ -10,7 +10,10 @@ import { MealTabs } from './components/meal-tabs'
 import { MealCard } from './components/meal-card'
 import { RuEmptyState } from './components/ru-empty-state'
 import { RuSkeleton } from './components/ru-skeleton'
-import { ViewModeToggle } from './components/view-mode-toggle'
+import {
+  ViewSwitcher,
+  type ViewSwitcherOption,
+} from '@/components/view-switcher'
 import { WeekNavigator } from './components/week-navigator'
 import { WeekMealTabs } from './components/week-meal-tabs'
 import { WeekBoard, WeekSkeleton } from './components/week-board'
@@ -29,6 +32,8 @@ import {
 import {
   ArrowsClockwiseIcon,
   BroomIcon,
+  CalendarBlankIcon,
+  ColumnsIcon,
   CreditCardIcon,
   WarningCircleIcon,
 } from '@phosphor-icons/react'
@@ -83,6 +88,21 @@ function getSavedCampus(): CampusId {
 function getServerCampus(): CampusId {
   return DEFAULT_CAMPUS_ID
 }
+
+const VIEW_MODE_OPTIONS: ViewSwitcherOption<RUViewMode>[] = [
+  {
+    value: 'day',
+    label: 'Dia',
+    icon: CalendarBlankIcon,
+    title: 'Visualizar cardápio do dia',
+  },
+  {
+    value: 'week',
+    label: 'Semana',
+    icon: ColumnsIcon,
+    title: 'Visualizar cardápio da semana em colunas',
+  },
+]
 
 function getSavedViewMode(): RUViewMode {
   if (typeof window === 'undefined') return 'day'
@@ -290,9 +310,11 @@ export default function RestaurantePage() {
               onSelectCampus={handleSelectCampus}
               disabled={isLoading || isFetching}
             />
-            <ViewModeToggle
-              viewMode={viewMode}
-              onChangeViewMode={handleSelectViewMode}
+            <ViewSwitcher
+              options={VIEW_MODE_OPTIONS}
+              value={viewMode}
+              onValueChange={handleSelectViewMode}
+              ariaLabel="Modo de visualização do cardápio"
               disabled={isLoading || isFetching}
             />
             <ModeToggle />

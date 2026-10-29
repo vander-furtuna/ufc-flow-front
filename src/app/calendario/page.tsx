@@ -16,11 +16,32 @@ import { cn } from '@/lib/utils'
 import { COLORS } from '@/data/colors'
 import { AppSearchBar } from '@/components/app-search-bar'
 import { useCalendar } from '@/contexts/calendar'
+import {
+  ViewSwitcher,
+  type ViewSwitcherOption,
+} from '@/components/view-switcher'
+
+type CalendarViewMode = 'list' | 'calendar'
+
+const VIEW_OPTIONS: ViewSwitcherOption<CalendarViewMode>[] = [
+  {
+    value: 'list',
+    label: 'Lista',
+    icon: ListIcon,
+    title: 'Visualizar eventos em lista',
+  },
+  {
+    value: 'calendar',
+    label: 'Calendário',
+    icon: CalendarBlankIcon,
+    title: 'Visualizar eventos no calendário mensal',
+  },
+]
 
 export default function AcademicCalendarPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showImportantEvents, setShowImportantEvents] = useState(false)
-  const [view, setView] = useState<'list' | 'calendar'>('list')
+  const [view, setView] = useState<CalendarViewMode>('list')
   const { lastUpdatedAt, isFetching, refetchCalendar } = useCalendar()
 
   return (
@@ -59,29 +80,12 @@ export default function AcademicCalendarPage() {
                     : 'Atualizar'}
               </span>
             </button>
-            <div className="bg-muted flex rounded-lg p-1">
-              <button
-                onClick={() => setView('list')}
-                className={cn(
-                  'text-muted-foreground hover:text-foreground flex items-center gap-2 rounded-md border border-transparent px-4 py-2 text-sm font-medium transition-all duration-200',
-                  view === 'list' && 'bg-background text-primary border-border',
-                )}
-              >
-                <ListIcon weight="bold" className="h-4 w-4" />
-                <span className="hidden sm:inline">Lista</span>
-              </button>
-              <button
-                onClick={() => setView('calendar')}
-                className={cn(
-                  'text-muted-foreground hover:text-foreground flex items-center gap-2 rounded-md border border-transparent px-4 py-2 text-sm font-medium transition-all duration-200',
-                  view === 'calendar' &&
-                    'bg-background text-primary border-border',
-                )}
-              >
-                <CalendarBlankIcon weight="bold" className="h-4 w-4" />
-                <span className="hidden sm:inline">Calendário</span>
-              </button>
-            </div>
+            <ViewSwitcher
+              options={VIEW_OPTIONS}
+              value={view}
+              onValueChange={setView}
+              ariaLabel="Modo de visualização do calendário"
+            />
             <ModeToggle />
           </div>
         </header>
