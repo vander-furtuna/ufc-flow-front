@@ -18,7 +18,9 @@ import { useRuMenu } from '@/hooks/use-ru-menu'
 import { useRuMenuWeek } from '@/hooks/use-ru-menu-week'
 import { getFortalezaTodayDate, getMondayOfWeek } from '@/lib/ru-scraper'
 import {
+  DEFAULT_CAMPUS_ID,
   UFC_CAMPUSES,
+  resolveCampusId,
   type CampusId,
   type MealType,
   type RUViewMode,
@@ -69,23 +71,17 @@ function subscribeToStorage(callback: () => void) {
 }
 
 function getSavedCampus(): CampusId {
-  if (typeof window === 'undefined') return 4
+  if (typeof window === 'undefined') return DEFAULT_CAMPUS_ID
   try {
-    const saved = localStorage.getItem('ufc_flow_ru_campus')
-    if (saved) {
-      const id = Number(saved) as CampusId
-      if (UFC_CAMPUSES.some((c) => c.id === id)) {
-        return id
-      }
-    }
+    return resolveCampusId(localStorage.getItem('ufc_flow_ru_campus'))
   } catch {
     // Ignora erro se localStorage inacessível
   }
-  return 4
+  return DEFAULT_CAMPUS_ID
 }
 
 function getServerCampus(): CampusId {
-  return 4
+  return DEFAULT_CAMPUS_ID
 }
 
 function getSavedViewMode(): RUViewMode {

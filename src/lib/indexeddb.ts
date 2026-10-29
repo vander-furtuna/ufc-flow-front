@@ -87,7 +87,7 @@ class IndexedDBStorage {
 
         // --- Nova Store de Cardápio do RU (Versão 6) ---
         if (!db.objectStoreNames.contains(STORE_RU)) {
-          // A chave será id composta: campusId-date (ex: "4-2026-09-25")
+          // A chave será id composta: campusId-date (ex: "9-2026-09-25")
           db.createObjectStore(STORE_RU, { keyPath: 'id' })
         }
       },

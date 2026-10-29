@@ -1,7 +1,9 @@
-export type CampusId = 1 | 3 | 4 | 5 | 6 | 7
+export type CampusId = 1 | 3 | 5 | 6 | 7 | 9
 
 export interface CampusOption {
   id: CampusId
+  /** Segmento usado na URL do portal: `/restaurante/cardapio/{slug}` */
+  slug: string
   name: string
   fullName: string
   city: string
@@ -11,13 +13,15 @@ export interface CampusOption {
 export const UFC_CAMPUSES: CampusOption[] = [
   {
     id: 1,
+    slug: '1-restaurante-universitario-de-fortaleza',
     name: 'Fortaleza',
     fullName: 'Restaurante Universitário de Fortaleza',
     city: 'Fortaleza',
     units: ['Pici 1', 'Pici 2', 'Benfica', 'Porangabussu', 'Labomar'],
   },
   {
-    id: 4,
+    id: 9,
+    slug: '9-restaurante-universitario-de-sobral',
     name: 'Sobral',
     fullName: 'Restaurante Universitário de Sobral',
     city: 'Sobral',
@@ -25,29 +29,44 @@ export const UFC_CAMPUSES: CampusOption[] = [
   },
   {
     id: 5,
+    slug: '5-restaurante-universitario-de-quixada',
     name: 'Quixadá',
     fullName: 'Restaurante Universitário de Quixadá',
     city: 'Quixadá',
   },
   {
     id: 3,
+    slug: '3-restaurante-universitario-de-russas',
     name: 'Russas',
     fullName: 'Restaurante Universitário de Russas',
     city: 'Russas',
   },
   {
     id: 6,
+    slug: '6-restaurante-universitario-de-crateus',
     name: 'Crateús',
     fullName: 'Restaurante Universitário de Crateús',
     city: 'Crateús',
   },
   {
     id: 7,
+    slug: '7-restaurante-universitario-de-itapaje',
     name: 'Itapajé',
     fullName: 'Restaurante Universitário de Itapajé',
     city: 'Itapajé',
   },
 ]
+
+export const DEFAULT_CAMPUS_ID: CampusId = 9
+
+/**
+ * Converte um valor arbitrário (query param, localStorage) em um CampusId válido.
+ * IDs antigos ou desconhecidos (ex: Sobral era 4) caem no campus padrão.
+ */
+export function resolveCampusId(value: unknown): CampusId {
+  const id = Number(value)
+  return UFC_CAMPUSES.find((c) => c.id === id)?.id ?? DEFAULT_CAMPUS_ID
+}
 
 export type MealType = 'desjejum' | 'almoco' | 'jantar'
 

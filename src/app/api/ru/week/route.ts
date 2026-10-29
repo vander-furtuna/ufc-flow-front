@@ -1,15 +1,14 @@
 import { scrapeRUMenuWeek } from '@/lib/ru-scraper'
-import type { CampusId } from '@/types/ru'
+import { resolveCampusId } from '@/types/ru'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(req.url)
-    const campusParam = searchParams.get('campus') || '4'
     const dateParam = searchParams.get('date') || undefined
 
-    const campusId = (Number(campusParam) || 4) as CampusId
+    const campusId = resolveCampusId(searchParams.get('campus'))
 
     const weekMenu = await scrapeRUMenuWeek(campusId, dateParam)
 

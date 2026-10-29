@@ -1,4 +1,9 @@
-import type { CampusId, RUMenuDay, RUMenuWeek } from '@/types/ru'
+import {
+  DEFAULT_CAMPUS_ID,
+  type CampusId,
+  type RUMenuDay,
+  type RUMenuWeek,
+} from '@/types/ru'
 
 export interface GetRuMenuParams {
   campusId?: CampusId
@@ -6,7 +11,7 @@ export interface GetRuMenuParams {
 }
 
 export async function getRuMenuService({
-  campusId = 4,
+  campusId = DEFAULT_CAMPUS_ID,
   date,
 }: GetRuMenuParams = {}): Promise<RUMenuDay> {
   const params = new URLSearchParams()
@@ -35,7 +40,7 @@ export interface GetRuMenuWeekParams {
 }
 
 export async function getRuMenuWeekService({
-  campusId = 4,
+  campusId = DEFAULT_CAMPUS_ID,
   date,
 }: GetRuMenuWeekParams = {}): Promise<RUMenuWeek> {
   const params = new URLSearchParams()

@@ -1,16 +1,27 @@
 import { randomUUID } from 'node:crypto'
 import { load } from 'cheerio'
-import type {
-  CampusId,
-  Meal,
-  MealCategory,
-  MenuItem,
-  MealType,
-  RUMenuDay,
-  RUMenuWeek,
+import {
+  DEFAULT_CAMPUS_ID,
+  UFC_CAMPUSES,
+  type CampusId,
+  type Meal,
+  type MealCategory,
+  type MenuItem,
+  type MealType,
+  type RUMenuDay,
+  type RUMenuWeek,
 } from '@/types/ru'
 
 const BASE_URL = 'https://ufc2012.ufc.br/restaurante/cardapio'
+
+function getCampusMenuUrl(campusId: CampusId, dateParam?: string): string {
+  const campus = UFC_CAMPUSES.find((c) => c.id === campusId)
+  if (!campus) {
+    throw new Error(`Campus desconhecido: ${campusId}`)
+  }
+  const campusUrl = `${BASE_URL}/${campus.slug}`
+  return dateParam ? `${campusUrl}/${dateParam}` : campusUrl
+}
 
 const WEEKDAY_NAMES = [
   'Domingo',
@@ -127,12 +138,10 @@ export function getWeekDaysRange(referenceDate?: string): WeekDaysRange {
  * Raspa o cardápio de um dia específico para um determinado campus.
  */
 export async function scrapeRUMenuDay(
-  campusId: CampusId = 4,
+  campusId: CampusId = DEFAULT_CAMPUS_ID,
   dateParam?: string,
 ): Promise<RUMenuDay> {
-  const targetUrl = dateParam
-    ? `${BASE_URL}/${campusId}/${dateParam}`
-    : `${BASE_URL}/${campusId}`
+  const targetUrl = getCampusMenuUrl(campusId, dateParam)
 
   const response = await fetch(targetUrl, {
     headers: {
@@ -339,7 +348,7 @@ export async function scrapeRUMenuDay(
  * Executa as 5 requisições em paralelo com tratamento resiliente por dia.
  */
 export async function scrapeRUMenuWeek(
-  campusId: CampusId = 4,
+  campusId: CampusId = DEFAULT_CAMPUS_ID,
   referenceDate?: string,
 ): Promise<RUMenuWeek> {
   const range = getWeekDaysRange(referenceDate)
